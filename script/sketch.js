@@ -1,5 +1,8 @@
 let playerY, computerY, ballX, ballY, ballSpeedX, ballSpeedY;
 let paddleHeight, paddleWidth, ballSize, borderThickness;
+let ballScale = 1; // Escala da bola
+let squashDuration = 10; // Duração da animação
+let squashTimer = 0; // Temporizador para controlar a animação
 
 function setup() {
     createCanvas(600, 400);
@@ -39,8 +42,12 @@ function draw() {
     // Desenhar a raquete do computador
     rect(width - 30, computerY, paddleWidth, paddleHeight);
 
-    // Desenhar a bola
-    ellipse(ballX, ballY, ballSize);
+    // Desenhar a bola com escala
+    push(); // Salvar o estado atual de transformação
+    translate(ballX, ballY); // Mover o ponto de origem para a posição da bola
+    scale(ballScale); // Aplicar a escala na bola
+    ellipse(0, 0, ballSize); // Desenhar a bola
+    pop(); // Restaurar o estado de transformação
 
     // Movimentar a bola
     ballX += ballSpeedX;
@@ -63,13 +70,13 @@ function draw() {
         let errorMargin = 30; // Margem de erro para tornar o movimento mais natural
 
         // Se o computador estiver fora da margem de erro, ele se move em direção à bola
-    if (abs(computerY - targetY) > errorMargin) {
-        if (computerY < targetY) {
-            computerY += computerSpeed; // Mover para baixo
-        } else if (computerY > targetY) {
-            computerY -= computerSpeed; // Mover para cima
+        if (abs(computerY - targetY) > errorMargin) {
+            if (computerY < targetY) {
+                computerY += computerSpeed; // Mover para baixo
+            } else if (computerY > targetY) {
+                computerY -= computerSpeed; // Mover para cima
+            }
         }
-    }
 
 
         // Restringir a raquete do computador dentro dos limites das barras
@@ -79,23 +86,26 @@ function draw() {
     // Direção da bola com base no toque das raquetes
     function handlePaddleCollision(paddleY, isComputer = false) {
         ballSpeedX *= -1;
-    
-        // Se a colisão for com o computador, aplicar um deslocamento aleatório na posição de impacto
+
+        // Definir escala para o "esmagamento"
+        ballScale = 0.6; // Achata a bola
+        squashTimer = squashDuration; // Reiniciar o temporizador da animação
+
+        // Resto do código de colisão...
         let impactPoint;
         if (isComputer) {
-            // Aplica um deslocamento pequeno para simular colisão em diferentes pontos da raquete
-            let offset = random(-paddleHeight / 4, paddleHeight / 4); // Desloca até 1/4 da altura da raquete
+            let offset = random(-paddleHeight / 4, paddleHeight / 4);
             impactPoint = (ballY + offset - paddleY) - paddleHeight / 2;
         } else {
             impactPoint = (ballY - paddleY) - paddleHeight / 2;
         }
-    
-        let normalizedImpact = impactPoint / (paddleHeight / 2); // Valor entre -1 e 1
-        ballSpeedY = normalizedImpact * 3; // Ajustar o ângulo de acordo com o ponto de impacto
-    
-        increaseSpeed(); // Aumenta a velocidade da bola
+
+        let normalizedImpact = impactPoint / (paddleHeight / 2);
+        ballSpeedY = normalizedImpact * 3;
+
+        increaseSpeed(); // Aumentar a velocidade da bola
     }
-    
+
     // Verificar colisão com o jogador
     if (ballX - ballSize / 2 <= 30 && ballY >= playerY && ballY <= playerY + paddleHeight) {
         handlePaddleCollision(playerY);
@@ -116,6 +126,13 @@ function draw() {
 
     // Controlar o jogador com o mouse
     playerY = constrain(mouseY - paddleHeight / 2, 0, height - paddleHeight);
+
+    // Lógica para restaurar a escala da bola
+    if (squashTimer > 0) {
+        squashTimer--;
+    } else {
+        ballScale = lerp(ballScale, 1, 0.1); // Gradualmente volta à escala normal (1x)
+    }
 }
 
 // Reseta posição da bola

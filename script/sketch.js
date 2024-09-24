@@ -3,6 +3,7 @@ let paddleHeight, paddleWidth, ballSize, borderThickness;
 let ballScale = 1; // Escala da bola
 let squashDuration = 10; // Duração da animação
 let squashTimer = 0; // Temporizador para controlar a animação
+const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
 
 function setup() {
     createCanvas(600, 400);
@@ -56,13 +57,25 @@ function draw() {
     // Verificar colisão com as barras superior e inferior
     if (ballY - ballSize / 2 <= borderThickness || ballY + ballSize / 2 >= height - borderThickness) {
         ballSpeedY *= -1;
+
+        // Evitar que a bola fique em linha reta vertical
+        if (abs(ballSpeedY) < 10) { // Se a velocidade vertical for muito baixa
+            ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Força uma mudança de direção
+        }
     }
 
     // Função para aumentar a velocidade da bola
     function increaseSpeed() {
-        ballSpeedX *= 1.1; // Aumentar a velocidade horizontal
-        ballSpeedY *= 1.1; // Aumentar a velocidade vertical
+        // Aumenta a velocidade horizontal e vertical, mas com um limite
+        if (abs(ballSpeedX) < maxBallSpeed) {
+            ballSpeedX *= 1.1; // Aumenta a velocidade horizontal, limitado pelo valor máximo
+        }
+        
+        if (abs(ballSpeedY) < maxBallSpeed) {
+            ballSpeedY *= 1.1; // Aumenta a velocidade vertical, limitado pelo valor máximo
+        }
     }
+    
     // Função para mover a raquete do computador de maneira mais inteligente
     function moveComputerPaddle() {
         let targetY = ballY - paddleHeight / 2; // O alvo é o centro da bola
@@ -102,6 +115,11 @@ function draw() {
 
         let normalizedImpact = impactPoint / (paddleHeight / 2);
         ballSpeedY = normalizedImpact * 3;
+
+        // Evitar movimento horizontal em linha reta (quase zero)
+        if (abs(ballSpeedY) < 1) {
+            ballSpeedY = random(1, 3) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
+        }
 
         increaseSpeed(); // Aumentar a velocidade da bola
     }

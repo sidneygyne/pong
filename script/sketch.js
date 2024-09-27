@@ -7,6 +7,8 @@ let ballScale = 1; // Escala da bola
 let squashDuration = 10; // Duração da animação
 let squashTimer = 0; // Temporizador para controlar a animação
 let ballAngle = 0; // Ângulo inicial da bola
+let bounceSound;
+let goalSound;
 const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
 
 
@@ -19,15 +21,19 @@ function setup() {
     borderThickness = 5;
     playerY = height / 2 - paddleHeight / 2;
     computerY = height / 2 - paddleHeight / 2;
+
+    // Carrega sons e imagens
     backgroundImage = loadImage('sprites/fundo2.png');
     playerPaddleImage = loadImage('sprites/barra01.png');
     computerPaddleImage = loadImage('sprites/barra02.png');
     ballImage = loadImage('sprites/bola.png');
+    bounceSound = loadSound('sounds/bounce.wav');
+    goalSound = loadSound('sounds/goal.wav'); 
     resetBall();
 }
 
 function draw() {
-     // Desenhar a imagem de fundo
+    // Desenhar a imagem de fundo
     image(backgroundImage, 0, 0, width, height);
 
     // Remover as bordas de qualquer forma desenhada
@@ -56,11 +62,11 @@ function draw() {
 
     // Calcular a velocidade total da bola (usando a magnitude da velocidade)
     let ballSpeed = sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
-    
+
     // Atualizar o ângulo da bola com base na velocidade
     ballAngle += ballSpeed * 0.05; // Ajustar o fator de rotação conforme necessário
 
-// Desenhar a bola com rotação
+    // Desenhar a bola com rotação
     push(); // Salvar o estado atual de transformação
     translate(ballX, ballY); // Mover o ponto de origem para a posição da bola
     rotate(ballAngle); // Aplicar a rotação
@@ -88,12 +94,12 @@ function draw() {
         if (abs(ballSpeedX) < maxBallSpeed) {
             ballSpeedX *= 1.1; // Aumenta a velocidade horizontal, limitado pelo valor máximo
         }
-        
+
         if (abs(ballSpeedY) < maxBallSpeed) {
             ballSpeedY *= 1.1; // Aumenta a velocidade vertical, limitado pelo valor máximo
         }
     }
-    
+
     // Função para mover a raquete do computador de maneira mais inteligente
     function moveComputerPaddle() {
         let targetY = ballY - paddleHeight / 2; // O alvo é o centro da bola
@@ -121,6 +127,9 @@ function draw() {
         // Definir escala para o "esmagamento"
         ballScale = 0.6; // Achata a bola
         squashTimer = squashDuration; // Reiniciar o temporizador da animação
+
+        // Tocar o som de colisão
+        bounceSound.play(); // Toca o som de colisão com a raquete
 
         // Resto do código de colisão...
         let impactPoint;
@@ -157,6 +166,7 @@ function draw() {
 
     // Verificar gol (bola fora dos limites)
     if (ballX - ballSize / 2 <= 0 || ballX + ballSize / 2 >= width) {
+        goalSound.play(); 
         resetBall();
     }
 

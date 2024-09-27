@@ -1,11 +1,12 @@
 let playerY, computerY, ballX, ballY, ballSpeedX, ballSpeedY;
 let paddleHeight, paddleWidth, ballSize, borderThickness;
 let backgroundImage; // Imagem de fundo
-let playerPaddleImage, computerPaddleImage; // Imagem raqutes
+let playerPaddleImage, computerPaddleImage; // Imagem raquetes
 let ballImage; // // Imagem da bola
 let ballScale = 1; // Escala da bola
 let squashDuration = 10; // Duração da animação
 let squashTimer = 0; // Temporizador para controlar a animação
+let ballAngle = 0; // Ângulo inicial da bola
 const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
 
 
@@ -18,10 +19,10 @@ function setup() {
     borderThickness = 5;
     playerY = height / 2 - paddleHeight / 2;
     computerY = height / 2 - paddleHeight / 2;
-    backgroundImage = loadImage('assets/fundo2.png');
-    playerPaddleImage = loadImage('assets/barra01.png');
-    computerPaddleImage = loadImage('assets/barra02.png');
-    ballImage = loadImage('assets/bola.png');
+    backgroundImage = loadImage('sprites/fundo2.png');
+    playerPaddleImage = loadImage('sprites/barra01.png');
+    computerPaddleImage = loadImage('sprites/barra02.png');
+    ballImage = loadImage('sprites/bola.png');
     resetBall();
 }
 
@@ -53,9 +54,16 @@ function draw() {
     // Desenhar a raquete do computador
     image(computerPaddleImage, width - 30, computerY, paddleWidth, paddleHeight);
 
-    // Desenhar a bola com escala
+    // Calcular a velocidade total da bola (usando a magnitude da velocidade)
+    let ballSpeed = sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
+    
+    // Atualizar o ângulo da bola com base na velocidade
+    ballAngle += ballSpeed * 0.05; // Ajustar o fator de rotação conforme necessário
+
+// Desenhar a bola com rotação
     push(); // Salvar o estado atual de transformação
     translate(ballX, ballY); // Mover o ponto de origem para a posição da bola
+    rotate(ballAngle); // Aplicar a rotação
     scale(ballScale); // Aplicar a escala na bola
     image(ballImage, -ballSize / 2, -ballSize / 2, ballSize, ballSize); // Desenhar a imagem da bola
     pop(); // Restaurar o estado de transformação

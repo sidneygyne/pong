@@ -7,10 +7,13 @@ let ballScale = 1; // Escala da bola
 let squashDuration = 10; // Duração da animação
 let squashTimer = 0; // Temporizador para controlar a animação
 let ballAngle = 0; // Ângulo inicial da bola
-let bounceSound;
-let goalSound;
+let bounceSound; // Som bola raquete
+let goalSound; // Som de Goll
+let playerScore = 0;
+let computerScore = 0;
+let goalScored = false; // Flag para garantir que o placar seja atualizado uma vez por gol
 const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
-
+const winningScore = 5; // Definir o número de pontos necessários para vencer
 
 
 function setup() {
@@ -28,11 +31,14 @@ function setup() {
     computerPaddleImage = loadImage('sprites/barra02.png');
     ballImage = loadImage('sprites/bola.png');
     bounceSound = loadSound('sounds/bounce.wav');
-    goalSound = loadSound('sounds/goal.wav'); 
+    goalSound = loadSound('sounds/goal.wav');
     resetBall();
 }
 
 function draw() {
+
+
+
     // Desenhar a imagem de fundo
     image(backgroundImage, 0, 0, width, height);
 
@@ -164,10 +170,17 @@ function draw() {
     // Chamar a função para mover a raquete do computador
     moveComputerPaddle();
 
-    // Verificar gol (bola fora dos limites)
-    if (ballX - ballSize / 2 <= 0 || ballX + ballSize / 2 >= width) {
-        goalSound.play(); 
-        resetBall();
+// Verificar gol (bola fora dos limites)
+    if (!goalScored && ballX - ballSize / 2 <= 0) {
+        computerScore++; // Computador marca um ponto
+        goalSound.play(); // Tocar o som de gol
+        goalScored = true; // Marcar que o gol foi detectado
+        setTimeout(resetBallAfterGoal, 1000); // Reiniciar a bola após 1 segundo
+    } else if (!goalScored && ballX + ballSize / 2 >= width) {
+        playerScore++; // Jogador marca um ponto
+        goalSound.play(); // Tocar o som de gol
+        goalScored = true; // Marcar que o gol foi detectado
+        setTimeout(resetBallAfterGoal, 1000); // Reiniciar a bola após 1 segundo
     }
 
     // Controlar o jogador com o mouse
@@ -178,6 +191,26 @@ function draw() {
         squashTimer--;
     } else {
         ballScale = lerp(ballScale, 1, 0.1); // Gradualmente volta à escala normal (1x)
+    }
+
+    // Exibir o placar
+    textAlign(CENTER);
+    textSize(32);
+    fill(255); // Cor do texto (branco)
+    text(playerScore, width / 4, 50); // Placar do jogador
+    text(computerScore, 3 * width / 4, 50); // Placar do computador
+
+    function resetBallAfterGoal() {
+        resetBall();
+        goalScored = false; // Reiniciar a flag para permitir a contagem de gols novamente
+    }
+
+    // Verificar se alguém ganhou
+    if (playerScore >= winningScore || computerScore >= winningScore) {
+        textSize(64);
+        text(playerScore >= winningScore ? "Player Wins!" : "Computer Wins!", width / 2, height / 2);
+        noLoop(); // Parar o jogo
+        return;
     }
 }
 

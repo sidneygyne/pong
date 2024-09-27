@@ -1,9 +1,14 @@
 let playerY, computerY, ballX, ballY, ballSpeedX, ballSpeedY;
 let paddleHeight, paddleWidth, ballSize, borderThickness;
+let backgroundImage; // Imagem de fundo
+let playerPaddleImage, computerPaddleImage; // Imagem raqutes
+let ballImage; // // Imagem da bola
 let ballScale = 1; // Escala da bola
 let squashDuration = 10; // Duração da animação
 let squashTimer = 0; // Temporizador para controlar a animação
 const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
+
+
 
 function setup() {
     createCanvas(600, 400);
@@ -13,17 +18,22 @@ function setup() {
     borderThickness = 5;
     playerY = height / 2 - paddleHeight / 2;
     computerY = height / 2 - paddleHeight / 2;
+    backgroundImage = loadImage('assets/fundo2.png');
+    playerPaddleImage = loadImage('assets/barra01.png');
+    computerPaddleImage = loadImage('assets/barra02.png');
+    ballImage = loadImage('assets/bola.png');
     resetBall();
 }
 
 function draw() {
-    background(0);
+     // Desenhar a imagem de fundo
+    image(backgroundImage, 0, 0, width, height);
 
     // Remover as bordas de qualquer forma desenhada
     noStroke();
 
     // Definir a cor das barras superior e inferior
-    fill(255, 0, 0); // Cor vermelha para as barras
+    fill(color("#318cd5")); // Cor vermelha para as barras
 
     // Desenhar a barra superior
     rect(0, 0, width, borderThickness);
@@ -38,16 +48,16 @@ function draw() {
     playerY = constrain(mouseY - paddleHeight / 2, borderThickness, height - paddleHeight - borderThickness);
 
     // Desenhar a raquete do jogador
-    rect(20, playerY, paddleWidth, paddleHeight);
+    image(playerPaddleImage, 20, playerY, paddleWidth, paddleHeight);
 
     // Desenhar a raquete do computador
-    rect(width - 30, computerY, paddleWidth, paddleHeight);
+    image(computerPaddleImage, width - 30, computerY, paddleWidth, paddleHeight);
 
     // Desenhar a bola com escala
     push(); // Salvar o estado atual de transformação
     translate(ballX, ballY); // Mover o ponto de origem para a posição da bola
     scale(ballScale); // Aplicar a escala na bola
-    ellipse(0, 0, ballSize); // Desenhar a bola
+    image(ballImage, -ballSize / 2, -ballSize / 2, ballSize, ballSize); // Desenhar a imagem da bola
     pop(); // Restaurar o estado de transformação
 
     // Movimentar a bola
@@ -59,8 +69,8 @@ function draw() {
         ballSpeedY *= -1;
 
         // Evitar que a bola fique em linha reta vertical
-        if (abs(ballSpeedY) < 10) { // Se a velocidade vertical for muito baixa
-            ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Força uma mudança de direção
+        if (abs(ballSpeedY) < 15) { // Se a velocidade vertical for muito baixa
+            ballSpeedY = random(2, 4, 6) * (ballSpeedY < 0 ? -1 : 1); // Força uma mudança de direção
         }
     }
 

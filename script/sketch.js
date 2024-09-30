@@ -14,10 +14,21 @@ let computerScore = 0;
 let goalScored = false; // Flag para garantir que o placar seja atualizado uma vez por gol
 const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
 const winningScore = 5; // Definir o número de pontos necessários para vencer
-const difficulty = "easy"; // Define o nivel de dificuldade da raquete easy, medium, hard
+let selectedOption = 0; // Variável para rastrear a seleção atual (índice)
+let gameStarted = false;
+let difficulty = 'easy';
+const difficultyOptions = ["Fácil", "Médio", "Difícil"];
+
+//Desenha os botoes de dificuldade
+let buttonX, buttonY = [], buttonWidth, buttonHeight;
 
 function setup() {
     createCanvas(600, 400);
+    buttonWidth = 200;
+    buttonHeight = 50;
+    buttonX = width / 2 - buttonWidth / 2;
+    let initialY = height / 2 - 75;
+    buttonY = [height / 2 - 60, height / 2, height / 2 + 60]; // Posição dos botões
     paddleWidth = 10;
     paddleHeight = 100;
     ballSize = 15;
@@ -33,9 +44,19 @@ function setup() {
     bounceSound = loadSound('sounds/bounce.wav');
     goalSound = loadSound('sounds/goal.wav');
     resetBall();
+
+    // Inicializar a posição dos botões
+    for (let i = 0; i < difficultyOptions.length; i++) {
+        buttonY[i] = initialY + i * 60;
+    }
 }
 
 function draw() {
+
+    if (!gameStarted) {
+        drawDifficultySelectionScreen(); // Mostrar a tela de seleção
+        return; // Não prosseguir para o jogo enquanto a dificuldade não for selecionada
+    }
 
     // Desenhar a imagem de fundo
     image(backgroundImage, 0, 0, width, height);
@@ -109,7 +130,7 @@ function draw() {
         let targetY = ballY - paddleHeight / 2;
         let computerSpeed = 6; // Velocidade alta para o nível difícil
         let errorMargin = 10; // Menor margem de erro para movimentos mais precisos
-    
+
         if (abs(computerY - targetY) > errorMargin) {
             if (computerY < targetY) {
                 computerY += computerSpeed;
@@ -117,14 +138,14 @@ function draw() {
                 computerY -= computerSpeed;
             }
         }
-    
+
         computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
     }
     function moveComputerPaddleMedium() {
         let targetY = ballY - paddleHeight / 2;
         let computerSpeed = 4; // Velocidade média
         let errorMargin = 20; // Margem de erro média
-    
+
         if (abs(computerY - targetY) > errorMargin) {
             if (computerY < targetY) {
                 computerY += computerSpeed;
@@ -132,14 +153,14 @@ function draw() {
                 computerY -= computerSpeed;
             }
         }
-    
+
         computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
     }
     function moveComputerPaddleEasy() {
         let targetY = ballY - paddleHeight / 2;
         let computerSpeed = 2; // Velocidade baixa para o nível fácil
         let errorMargin = 40; // Margem de erro maior
-    
+
         if (abs(computerY - targetY) > errorMargin) {
             if (computerY < targetY) {
                 computerY += computerSpeed;
@@ -147,19 +168,19 @@ function draw() {
                 computerY -= computerSpeed;
             }
         }
-    
+
         computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
     }
-    
 
-        // Chamar a função para mover a raquete do computador conforme nivel de fificuldade escolhido
-        if (difficulty === 'easy') {
-            moveComputerPaddleEasy();
-        } else if (difficulty === 'medium') {
-            moveComputerPaddleMedium();
-        } else if (difficulty === 'hard') {
-            moveComputerPaddleHard();
-        }
+
+    // Chamar a função para mover a raquete do computador conforme nivel de fificuldade escolhido
+    if (difficulty === 'easy') {
+        moveComputerPaddleEasy();
+    } else if (difficulty === 'medium') {
+        moveComputerPaddleMedium();
+    } else if (difficulty === 'hard') {
+        moveComputerPaddleHard();
+    }
 
 
     // Direção da bola com base no toque das raquetes
@@ -210,7 +231,7 @@ function draw() {
 
 
 
-// Verificar gol (bola fora dos limites)
+    // Verificar gol (bola fora dos limites)
     if (!goalScored && ballX - ballSize / 2 <= 0) {
         computerScore++; // Computador marca um ponto
         goalSound.play(); // Tocar o som de gol
@@ -262,3 +283,76 @@ function resetBall() {
     ballSpeedY = random([-3, 3]); // Movimento aleatório vertical
 }
 
+function drawDifficultySelectionScreen() {
+    background(0);
+    textAlign(CENTER);
+    textSize(32);
+    fill(255);
+
+    let mouseOverOption = -1; // Variável para rastrear se o mouse está sobre algum botão
+
+    for (let i = 0; i < difficultyOptions.length; i++) {
+        // Verifica se o mouse está sobre o botão
+        if (mouseX >= buttonX && mouseX <= buttonX + buttonWidth &&
+            mouseY >= buttonY[i] && mouseY <= buttonY[i] + buttonHeight) {
+            mouseOverOption = i; // Atualiza para o índice do botão onde o mouse está
+            selectedOption = i;  // Atualiza também a seleção do teclado com o índice do mouse
+            fill("#FFD700"); // Cor do botão destacado pelo mouse
+        } else if (i === selectedOption && mouseOverOption === -1) {
+            // Se o mouse não estiver sobre nenhum botão, use a seleção do teclado
+            fill("#FFD700"); // Cor do botão destacado pelo teclado
+        } else {
+            fill(255); // Cor padrão do botão
+        }
+
+        // Desenhar o botão
+        rect(buttonX, buttonY[i], buttonWidth, buttonHeight, 30);
+
+        // Desenhar o texto do botão
+        fill(0);
+        text(difficultyOptions[i], width / 2, buttonY[i] + buttonHeight / 1.3);
+    }
+}
+
+function applyDifficultySelection() {
+    switch (selectedOption) {
+        case 0:
+            difficulty = 'easy';
+            break;
+        case 1:
+            difficulty = 'medium';
+            break;
+        case 2:
+            difficulty = 'hard';
+            break;
+    }
+    // Iniciar o jogo com a dificuldade selecionada
+    //console.log("Dificuldade selecionada:", difficulty);
+}
+
+function keyPressed() {
+    if (!gameStarted) {
+        if (keyCode === UP_ARROW) {
+            selectedOption = (selectedOption - 1 + difficultyOptions.length) % difficultyOptions.length;
+        } else if (keyCode === DOWN_ARROW) {
+            selectedOption = (selectedOption + 1) % difficultyOptions.length;
+        } else if (keyCode === ENTER) {
+            applyDifficultySelection();
+            gameStarted = true;
+        }
+    }
+}
+
+function mousePressed() {
+    if (!gameStarted) {
+        for (let i = 0; i < difficultyOptions.length; i++) {
+            if (mouseX >= buttonX && mouseX <= buttonX + buttonWidth &&
+                mouseY >= buttonY[i] && mouseY <= buttonY[i] + buttonHeight) {
+                selectedOption = i;
+                applyDifficultySelection();
+
+                gameStarted = true; // Iniciar o jogo
+            }
+        }
+    }
+}

@@ -19,11 +19,24 @@ let gameStarted = false;
 let difficulty = 'easy';
 const difficultyOptions = ["Fácil", "Médio", "Difícil"];
 
+let initialScreen = true; // Variável para controlar se a tela inicial está sendo exibida
+let startButtonX, startButtonY, startButtonWidth, startButtonHeight;
+
 //Desenha os botoes de dificuldade
 let buttonX, buttonY = [], buttonWidth, buttonHeight;
 
 function setup() {
     createCanvas(600, 400);
+
+    // Inicializar a tela inicial
+    startButtonWidth = 200;
+    startButtonHeight = 50;
+    startButtonX = width / 2 - startButtonWidth / 2;
+    startButtonY = height / 2 + 50;
+
+        // Carregar a imagem de fundo da tela inicial
+       // backgroundImage = loadImage('sprites/fundo_inicio.jfif');
+
     buttonWidth = 200;
     buttonHeight = 50;
     buttonX = width / 2 - buttonWidth / 2;
@@ -52,6 +65,12 @@ function setup() {
 }
 
 function draw() {
+
+
+    if (initialScreen) {
+        drawInitialScreen(); // Mostrar a tela inicial
+        return;
+    }
 
     if (!gameStarted) {
         drawDifficultySelectionScreen(); // Mostrar a tela de seleção
@@ -283,8 +302,55 @@ function resetBall() {
     ballSpeedY = random([-3, 3]); // Movimento aleatório vertical
 }
 
+// Função para desenhar a tela inicial
+function drawInitialScreen() {
+    background(0);
+
+    // Desenhar a imagem de fundo da tela inicial
+    image(backgroundImage, 0, 0, width, height);
+
+    // Definir o estilo do texto
+    textAlign(CENTER);
+    textSize(64);
+    fill(255);
+
+    // Mostrar o texto do título
+    text("Pong Game", width / 2, height / 2 - 100);
+
+    // Verificar se o mouse está sobre o botão de start
+    if (mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
+        mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
+        fill("#FFD700"); // Mudar a cor quando o mouse está sobre o botão
+    } else {
+        fill(255); // Cor normal do botão
+    }
+
+  // Verifica se o botão está selecionado (com teclado ou mouse)
+    if (selectedOption === 0) {
+        fill("#FFD700");  // Cor de destaque
+    } else {
+        fill(255);  // Cor normal
+    }
+
+    // Desenhar o botão de start
+    rect(startButtonX, startButtonY, startButtonWidth, startButtonHeight, 30);
+    fill(0);
+    textSize(32);
+    text("Iniciar", width / 2, startButtonY + startButtonHeight / 1.4);
+
+     // Desenha instruções
+     fill(255);
+     textSize(20);
+     text("Precione ENTER ou CLICK para iniciar", width / 2, height - 50);  // Exibe uma dica de controle na tela
+ 
+}
+
 function drawDifficultySelectionScreen() {
     background(0);
+
+    // Desenhar a imagem de fundo da tela inicial
+    image(backgroundImage, 0, 0, width, height);
+    
     textAlign(CENTER);
     textSize(32);
     fill(255);
@@ -310,7 +376,7 @@ function drawDifficultySelectionScreen() {
 
         // Desenhar o texto do botão
         fill(0);
-        text(difficultyOptions[i], width / 2, buttonY[i] + buttonHeight / 1.3);
+        text(difficultyOptions[i], width / 2, buttonY[i] + buttonHeight / 1.4);
     }
 }
 
@@ -330,21 +396,15 @@ function applyDifficultySelection() {
     //console.log("Dificuldade selecionada:", difficulty);
 }
 
-function keyPressed() {
-    if (!gameStarted) {
-        if (keyCode === UP_ARROW) {
-            selectedOption = (selectedOption - 1 + difficultyOptions.length) % difficultyOptions.length;
-        } else if (keyCode === DOWN_ARROW) {
-            selectedOption = (selectedOption + 1) % difficultyOptions.length;
-        } else if (keyCode === ENTER) {
-            applyDifficultySelection();
-            gameStarted = true;
-        }
-    }
-}
-
+// Função para verificar clique na tela inicial
 function mousePressed() {
-    if (!gameStarted) {
+    if (initialScreen) {
+        // Verifica se o botão "Start" foi clicado
+        if (mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
+            mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
+            initialScreen = false; // Sair da tela inicial
+        }
+    } else if (!gameStarted) {
         for (let i = 0; i < difficultyOptions.length; i++) {
             if (mouseX >= buttonX && mouseX <= buttonX + buttonWidth &&
                 mouseY >= buttonY[i] && mouseY <= buttonY[i] + buttonHeight) {
@@ -356,3 +416,26 @@ function mousePressed() {
         }
     }
 }
+
+function keyPressed() {
+    // Verifica se estamos na tela inicial
+    if (initialScreen) {
+        if (keyCode === ENTER) {
+            // Quando a tecla Enter for pressionada, inicie a seleção de dificuldade
+            initialScreen = false;
+        }
+    } 
+    // Verifica se estamos na tela de seleção de dificuldade
+    else if (!gameStarted) {
+        if (keyCode === UP_ARROW) {
+            selectedOption = (selectedOption - 1 + difficultyOptions.length) % difficultyOptions.length;
+        } else if (keyCode === DOWN_ARROW) {
+            selectedOption = (selectedOption + 1) % difficultyOptions.length;
+        } else if (keyCode === ENTER) {
+            applyDifficultySelection();
+            gameStarted = true;  // Começa o jogo com a dificuldade selecionada
+        }
+    }
+}
+
+

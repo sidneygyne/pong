@@ -14,7 +14,7 @@ let computerScore = 0;
 let goalScored = false; // Flag para garantir que o placar seja atualizado uma vez por gol
 const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
 const winningScore = 5; // Definir o número de pontos necessários para vencer
-
+const difficulty = "easy"; // Define o nivel de dificuldade da raquete easy, medium, hard
 
 function setup() {
     createCanvas(600, 400);
@@ -36,8 +36,6 @@ function setup() {
 }
 
 function draw() {
-
-
 
     // Desenhar a imagem de fundo
     image(backgroundImage, 0, 0, width, height);
@@ -106,25 +104,63 @@ function draw() {
         }
     }
 
-    // Função para mover a raquete do computador de maneira mais inteligente
-    function moveComputerPaddle() {
-        let targetY = ballY - paddleHeight / 2; // O alvo é o centro da bola
-        let computerSpeed = 3; // Velocidade da raquete do computador
-        let errorMargin = 30; // Margem de erro para tornar o movimento mais natural
-
-        // Se o computador estiver fora da margem de erro, ele se move em direção à bola
+    // Funções para mover a raquete do computador: Dificil, médio e fácil
+    function moveComputerPaddleHard() {
+        let targetY = ballY - paddleHeight / 2;
+        let computerSpeed = 6; // Velocidade alta para o nível difícil
+        let errorMargin = 10; // Menor margem de erro para movimentos mais precisos
+    
         if (abs(computerY - targetY) > errorMargin) {
             if (computerY < targetY) {
-                computerY += computerSpeed; // Mover para baixo
+                computerY += computerSpeed;
             } else if (computerY > targetY) {
-                computerY -= computerSpeed; // Mover para cima
+                computerY -= computerSpeed;
             }
         }
-
-
-        // Restringir a raquete do computador dentro dos limites das barras
+    
         computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
     }
+    function moveComputerPaddleMedium() {
+        let targetY = ballY - paddleHeight / 2;
+        let computerSpeed = 4; // Velocidade média
+        let errorMargin = 20; // Margem de erro média
+    
+        if (abs(computerY - targetY) > errorMargin) {
+            if (computerY < targetY) {
+                computerY += computerSpeed;
+            } else if (computerY > targetY) {
+                computerY -= computerSpeed;
+            }
+        }
+    
+        computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
+    }
+    function moveComputerPaddleEasy() {
+        let targetY = ballY - paddleHeight / 2;
+        let computerSpeed = 2; // Velocidade baixa para o nível fácil
+        let errorMargin = 40; // Margem de erro maior
+    
+        if (abs(computerY - targetY) > errorMargin) {
+            if (computerY < targetY) {
+                computerY += computerSpeed;
+            } else if (computerY > targetY) {
+                computerY -= computerSpeed;
+            }
+        }
+    
+        computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
+    }
+    
+
+        // Chamar a função para mover a raquete do computador conforme nivel de fificuldade escolhido
+        if (difficulty === 'easy') {
+            moveComputerPaddleEasy();
+        } else if (difficulty === 'medium') {
+            moveComputerPaddleMedium();
+        } else if (difficulty === 'hard') {
+            moveComputerPaddleHard();
+        }
+
 
     // Direção da bola com base no toque das raquetes
     function handlePaddleCollision(paddleY, isComputer = false) {
@@ -160,15 +196,19 @@ function draw() {
     // Verificar colisão com o jogador
     if (ballX - ballSize / 2 <= 30 && ballY >= playerY && ballY <= playerY + paddleHeight) {
         handlePaddleCollision(playerY);
+    } else if (ballX - ballSize / 2 <= 30 && ballX + ballSpeedX - ballSize / 2 > 30) {
+        handlePaddleCollision(playerY);
     }
 
     // Verificar colisão com o computador
     if (ballX + ballSize / 2 >= width - 30 && ballY >= computerY && ballY <= computerY + paddleHeight) {
-        handlePaddleCollision(computerY, true); // Passa "true" para indicar que é a colisão com o computador
+        handlePaddleCollision(computerY, true);
+    } else if (ballX + ballSize / 2 >= width - 30 && ballX + ballSpeedX + ballSize / 2 < width - 30) {
+        handlePaddleCollision(computerY, true);
     }
 
-    // Chamar a função para mover a raquete do computador
-    moveComputerPaddle();
+
+
 
 // Verificar gol (bola fora dos limites)
     if (!goalScored && ballX - ballSize / 2 <= 0) {

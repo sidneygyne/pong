@@ -25,6 +25,11 @@ let startButtonX, startButtonY, startButtonWidth, startButtonHeight;
 //Desenha os botoes de dificuldade
 let buttonX, buttonY = [], buttonWidth, buttonHeight;
 
+let playerName = 'Player'; // Nome padrão
+let nameEntryScreen = false; // Novo estado para a tela de nome
+let nameInputActive = false; // Controla se a tela de nome está ativa
+let difficultySelectionScreen = false; // Estado para a tela de seleção de dificuldade
+
 function setup() {
     createCanvas(600, 400);
 
@@ -34,8 +39,8 @@ function setup() {
     startButtonX = width / 2 - startButtonWidth / 2;
     startButtonY = height / 2 + 50;
 
-        // Carregar a imagem de fundo da tela inicial
-       // backgroundImage = loadImage('sprites/fundo_inicio.jfif');
+    // Carregar a imagem de fundo da tela inicial
+    // backgroundImage = loadImage('sprites/fundo_inicio.jfif');
 
     buttonWidth = 200;
     buttonHeight = 50;
@@ -72,225 +77,233 @@ function draw() {
         return;
     }
 
-    if (!gameStarted) {
-        drawDifficultySelectionScreen(); // Mostrar a tela de seleção
-        return; // Não prosseguir para o jogo enquanto a dificuldade não for selecionada
-    }
-
-    // Desenhar a imagem de fundo
-    image(backgroundImage, 0, 0, width, height);
-
-    // Remover as bordas de qualquer forma desenhada
-    noStroke();
-
-    // Definir a cor das barras superior e inferior
-    fill(color("#318cd5")); // Cor vermelha para as barras
-
-    // Desenhar a barra superior
-    rect(0, 0, width, borderThickness);
-
-    // Desenhar a barra inferior
-    rect(0, height - borderThickness, width, borderThickness);
-
-    // Definir a cor das raquetes e da bola (opcional, se quiser diferenciar)
-    fill(255); // Cor branca para raquetes e bola
-
-    // Restringir a raquete do jogador dentro dos limites das barras
-    playerY = constrain(mouseY - paddleHeight / 2, borderThickness, height - paddleHeight - borderThickness);
-
-    // Desenhar a raquete do jogador
-    image(playerPaddleImage, 20, playerY, paddleWidth, paddleHeight);
-
-    // Desenhar a raquete do computador
-    image(computerPaddleImage, width - 30, computerY, paddleWidth, paddleHeight);
-
-    // Calcular a velocidade total da bola (usando a magnitude da velocidade)
-    let ballSpeed = sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
-
-    // Atualizar o ângulo da bola com base na velocidade
-    ballAngle += ballSpeed * 0.05; // Ajustar o fator de rotação conforme necessário
-
-    // Desenhar a bola com rotação
-    push(); // Salvar o estado atual de transformação
-    translate(ballX, ballY); // Mover o ponto de origem para a posição da bola
-    rotate(ballAngle); // Aplicar a rotação
-    scale(ballScale); // Aplicar a escala na bola
-    image(ballImage, -ballSize / 2, -ballSize / 2, ballSize, ballSize); // Desenhar a imagem da bola
-    pop(); // Restaurar o estado de transformação
-
-    // Movimentar a bola
-    ballX += ballSpeedX;
-    ballY += ballSpeedY;
-
-    // Verificar colisão com as barras superior e inferior
-    if (ballY - ballSize / 2 <= borderThickness || ballY + ballSize / 2 >= height - borderThickness) {
-        ballSpeedY *= -1;
-
-        // Evitar que a bola fique em linha reta vertical
-        if (abs(ballSpeedY) < 15) { // Se a velocidade vertical for muito baixa
-            ballSpeedY = random(2, 4, 6) * (ballSpeedY < 0 ? -1 : 1); // Força uma mudança de direção
-        }
-    }
-
-    // Função para aumentar a velocidade da bola
-    function increaseSpeed() {
-        // Aumenta a velocidade horizontal e vertical, mas com um limite
-        if (abs(ballSpeedX) < maxBallSpeed) {
-            ballSpeedX *= 1.1; // Aumenta a velocidade horizontal, limitado pelo valor máximo
-        }
-
-        if (abs(ballSpeedY) < maxBallSpeed) {
-            ballSpeedY *= 1.1; // Aumenta a velocidade vertical, limitado pelo valor máximo
-        }
-    }
-
-    // Funções para mover a raquete do computador: Dificil, médio e fácil
-    function moveComputerPaddleHard() {
-        let targetY = ballY - paddleHeight / 2;
-        let computerSpeed = 6; // Velocidade alta para o nível difícil
-        let errorMargin = 10; // Menor margem de erro para movimentos mais precisos
-
-        if (abs(computerY - targetY) > errorMargin) {
-            if (computerY < targetY) {
-                computerY += computerSpeed;
-            } else if (computerY > targetY) {
-                computerY -= computerSpeed;
-            }
-        }
-
-        computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
-    }
-    function moveComputerPaddleMedium() {
-        let targetY = ballY - paddleHeight / 2;
-        let computerSpeed = 4; // Velocidade média
-        let errorMargin = 20; // Margem de erro média
-
-        if (abs(computerY - targetY) > errorMargin) {
-            if (computerY < targetY) {
-                computerY += computerSpeed;
-            } else if (computerY > targetY) {
-                computerY -= computerSpeed;
-            }
-        }
-
-        computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
-    }
-    function moveComputerPaddleEasy() {
-        let targetY = ballY - paddleHeight / 2;
-        let computerSpeed = 2; // Velocidade baixa para o nível fácil
-        let errorMargin = 40; // Margem de erro maior
-
-        if (abs(computerY - targetY) > errorMargin) {
-            if (computerY < targetY) {
-                computerY += computerSpeed;
-            } else if (computerY > targetY) {
-                computerY -= computerSpeed;
-            }
-        }
-
-        computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
-    }
-
-
-    // Chamar a função para mover a raquete do computador conforme nivel de fificuldade escolhido
-    if (difficulty === 'easy') {
-        moveComputerPaddleEasy();
-    } else if (difficulty === 'medium') {
-        moveComputerPaddleMedium();
-    } else if (difficulty === 'hard') {
-        moveComputerPaddleHard();
-    }
-
-
-    // Direção da bola com base no toque das raquetes
-    function handlePaddleCollision(paddleY, isComputer = false) {
-        ballSpeedX *= -1;
-
-        // Definir escala para o "esmagamento"
-        ballScale = 0.6; // Achata a bola
-        squashTimer = squashDuration; // Reiniciar o temporizador da animação
-
-        // Tocar o som de colisão
-        bounceSound.play(); // Toca o som de colisão com a raquete
-
-        // Resto do código de colisão...
-        let impactPoint;
-        if (isComputer) {
-            let offset = random(-paddleHeight / 4, paddleHeight / 4);
-            impactPoint = (ballY + offset - paddleY) - paddleHeight / 2;
-        } else {
-            impactPoint = (ballY - paddleY) - paddleHeight / 2;
-        }
-
-        let normalizedImpact = impactPoint / (paddleHeight / 2);
-        ballSpeedY = normalizedImpact * 3;
-
-        // Evitar movimento horizontal em linha reta (quase zero)
-        if (abs(ballSpeedY) < 1) {
-            ballSpeedY = random(1, 3) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
-        }
-
-        increaseSpeed(); // Aumentar a velocidade da bola
-    }
-
-    // Verificar colisão com o jogador
-    if (ballX - ballSize / 2 <= 30 && ballY >= playerY && ballY <= playerY + paddleHeight) {
-        handlePaddleCollision(playerY);
-    } else if (ballX - ballSize / 2 <= 30 && ballX + ballSpeedX - ballSize / 2 > 30) {
-        handlePaddleCollision(playerY);
-    }
-
-    // Verificar colisão com o computador
-    if (ballX + ballSize / 2 >= width - 30 && ballY >= computerY && ballY <= computerY + paddleHeight) {
-        handlePaddleCollision(computerY, true);
-    } else if (ballX + ballSize / 2 >= width - 30 && ballX + ballSpeedX + ballSize / 2 < width - 30) {
-        handlePaddleCollision(computerY, true);
-    }
-
-
-
-
-    // Verificar gol (bola fora dos limites)
-    if (!goalScored && ballX - ballSize / 2 <= 0) {
-        computerScore++; // Computador marca um ponto
-        goalSound.play(); // Tocar o som de gol
-        goalScored = true; // Marcar que o gol foi detectado
-        setTimeout(resetBallAfterGoal, 1000); // Reiniciar a bola após 1 segundo
-    } else if (!goalScored && ballX + ballSize / 2 >= width) {
-        playerScore++; // Jogador marca um ponto
-        goalSound.play(); // Tocar o som de gol
-        goalScored = true; // Marcar que o gol foi detectado
-        setTimeout(resetBallAfterGoal, 1000); // Reiniciar a bola após 1 segundo
-    }
-
-    // Controlar o jogador com o mouse
-    playerY = constrain(mouseY - paddleHeight / 2, 0, height - paddleHeight);
-
-    // Lógica para restaurar a escala da bola
-    if (squashTimer > 0) {
-        squashTimer--;
-    } else {
-        ballScale = lerp(ballScale, 1, 0.1); // Gradualmente volta à escala normal (1x)
-    }
-
-    // Exibir o placar
-    textAlign(CENTER);
-    textSize(32);
-    fill(255); // Cor do texto (branco)
-    text(playerScore, width / 4, 50); // Placar do jogador
-    text(computerScore, 3 * width / 4, 50); // Placar do computador
-
-    function resetBallAfterGoal() {
-        resetBall();
-        goalScored = false; // Reiniciar a flag para permitir a contagem de gols novamente
-    }
-
-    // Verificar se alguém ganhou
-    if (playerScore >= winningScore || computerScore >= winningScore) {
-        textSize(64);
-        text(playerScore >= winningScore ? "Player Wins!" : "Computer Wins!", width / 2, height / 2);
-        noLoop(); // Parar o jogo
+    if (nameEntryScreen) {
+        drawNameEntryScreen(); // Mostrar a tela de entrada de nome
         return;
+    }
+
+
+    if (difficultySelectionScreen) {
+        drawDifficultySelectionScreen(); // Mostrar a tela de seleção de dificuldade
+        return;
+    }
+
+    if (gameStarted) {
+
+        // Desenhar a imagem de fundo
+        image(backgroundImage, 0, 0, width, height);
+
+        // Remover as bordas de qualquer forma desenhada
+        noStroke();
+
+        // Definir a cor das barras superior e inferior
+        fill(color("#318cd5")); // Cor vermelha para as barras
+
+        // Desenhar a barra superior
+        rect(0, 0, width, borderThickness);
+
+        // Desenhar a barra inferior
+        rect(0, height - borderThickness, width, borderThickness);
+
+        // Definir a cor das raquetes e da bola (opcional, se quiser diferenciar)
+        fill(255); // Cor branca para raquetes e bola
+
+        // Restringir a raquete do jogador dentro dos limites das barras
+        playerY = constrain(mouseY - paddleHeight / 2, borderThickness, height - paddleHeight - borderThickness);
+
+        // Desenhar a raquete do jogador
+        image(playerPaddleImage, 20, playerY, paddleWidth, paddleHeight);
+
+        // Desenhar a raquete do computador
+        image(computerPaddleImage, width - 30, computerY, paddleWidth, paddleHeight);
+
+        // Calcular a velocidade total da bola (usando a magnitude da velocidade)
+        let ballSpeed = sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
+
+        // Atualizar o ângulo da bola com base na velocidade
+        ballAngle += ballSpeed * 0.05; // Ajustar o fator de rotação conforme necessário
+
+        // Desenhar a bola com rotação
+        push(); // Salvar o estado atual de transformação
+        translate(ballX, ballY); // Mover o ponto de origem para a posição da bola
+        rotate(ballAngle); // Aplicar a rotação
+        scale(ballScale); // Aplicar a escala na bola
+        image(ballImage, -ballSize / 2, -ballSize / 2, ballSize, ballSize); // Desenhar a imagem da bola
+        pop(); // Restaurar o estado de transformação
+
+        // Movimentar a bola
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
+
+        // Verificar colisão com as barras superior e inferior
+        if (ballY - ballSize / 2 <= borderThickness || ballY + ballSize / 2 >= height - borderThickness) {
+            ballSpeedY *= -1;
+
+            // Evitar que a bola fique em linha reta vertical
+            if (abs(ballSpeedY) < 15) { // Se a velocidade vertical for muito baixa
+                ballSpeedY = random(2, 4, 6) * (ballSpeedY < 0 ? -1 : 1); // Força uma mudança de direção
+            }
+        }
+
+        // Função para aumentar a velocidade da bola
+        function increaseSpeed() {
+            // Aumenta a velocidade horizontal e vertical, mas com um limite
+            if (abs(ballSpeedX) < maxBallSpeed) {
+                ballSpeedX *= 1.1; // Aumenta a velocidade horizontal, limitado pelo valor máximo
+            }
+
+            if (abs(ballSpeedY) < maxBallSpeed) {
+                ballSpeedY *= 1.1; // Aumenta a velocidade vertical, limitado pelo valor máximo
+            }
+        }
+
+        // Funções para mover a raquete do computador: Dificil, médio e fácil
+        function moveComputerPaddleHard() {
+            let targetY = ballY - paddleHeight / 2;
+            let computerSpeed = 6; // Velocidade alta para o nível difícil
+            let errorMargin = 10; // Menor margem de erro para movimentos mais precisos
+
+            if (abs(computerY - targetY) > errorMargin) {
+                if (computerY < targetY) {
+                    computerY += computerSpeed;
+                } else if (computerY > targetY) {
+                    computerY -= computerSpeed;
+                }
+            }
+
+            computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
+        }
+        function moveComputerPaddleMedium() {
+            let targetY = ballY - paddleHeight / 2;
+            let computerSpeed = 4; // Velocidade média
+            let errorMargin = 20; // Margem de erro média
+
+            if (abs(computerY - targetY) > errorMargin) {
+                if (computerY < targetY) {
+                    computerY += computerSpeed;
+                } else if (computerY > targetY) {
+                    computerY -= computerSpeed;
+                }
+            }
+
+            computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
+        }
+        function moveComputerPaddleEasy() {
+            let targetY = ballY - paddleHeight / 2;
+            let computerSpeed = 2; // Velocidade baixa para o nível fácil
+            let errorMargin = 40; // Margem de erro maior
+
+            if (abs(computerY - targetY) > errorMargin) {
+                if (computerY < targetY) {
+                    computerY += computerSpeed;
+                } else if (computerY > targetY) {
+                    computerY -= computerSpeed;
+                }
+            }
+
+            computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
+        }
+
+
+        // Chamar a função para mover a raquete do computador conforme nivel de fificuldade escolhido
+        if (difficulty === 'easy') {
+            moveComputerPaddleEasy();
+        } else if (difficulty === 'medium') {
+            moveComputerPaddleMedium();
+        } else if (difficulty === 'hard') {
+            moveComputerPaddleHard();
+        }
+
+
+        // Direção da bola com base no toque das raquetes
+        function handlePaddleCollision(paddleY, isComputer = false) {
+            ballSpeedX *= -1;
+
+            // Definir escala para o "esmagamento"
+            ballScale = 0.6; // Achata a bola
+            squashTimer = squashDuration; // Reiniciar o temporizador da animação
+
+            // Tocar o som de colisão
+            bounceSound.play(); // Toca o som de colisão com a raquete
+
+            // Resto do código de colisão...
+            let impactPoint;
+            if (isComputer) {
+                let offset = random(-paddleHeight / 4, paddleHeight / 4);
+                impactPoint = (ballY + offset - paddleY) - paddleHeight / 2;
+            } else {
+                impactPoint = (ballY - paddleY) - paddleHeight / 2;
+            }
+
+            let normalizedImpact = impactPoint / (paddleHeight / 2);
+            ballSpeedY = normalizedImpact * 3;
+
+            // Evitar movimento horizontal em linha reta (quase zero)
+            if (abs(ballSpeedY) < 1) {
+                ballSpeedY = random(1, 3) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
+            }
+
+            increaseSpeed(); // Aumentar a velocidade da bola
+        }
+
+        // Verificar colisão com o jogador
+        if (ballX - ballSize / 2 <= 30 && ballY >= playerY && ballY <= playerY + paddleHeight) {
+            handlePaddleCollision(playerY);
+        } else if (ballX - ballSize / 2 <= 30 && ballX + ballSpeedX - ballSize / 2 > 30) {
+            handlePaddleCollision(playerY);
+        }
+
+        // Verificar colisão com o computador
+        if (ballX + ballSize / 2 >= width - 30 && ballY >= computerY && ballY <= computerY + paddleHeight) {
+            handlePaddleCollision(computerY, true);
+        } else if (ballX + ballSize / 2 >= width - 30 && ballX + ballSpeedX + ballSize / 2 < width - 30) {
+            handlePaddleCollision(computerY, true);
+        }
+
+
+        // Verificar gol (bola fora dos limites)
+        if (!goalScored && ballX - ballSize / 2 <= 0) {
+            computerScore++; // Computador marca um ponto
+            goalSound.play(); // Tocar o som de gol
+            goalScored = true; // Marcar que o gol foi detectado
+            setTimeout(resetBallAfterGoal, 1000); // Reiniciar a bola após 1 segundo
+        } else if (!goalScored && ballX + ballSize / 2 >= width) {
+            playerScore++; // Jogador marca um ponto
+            goalSound.play(); // Tocar o som de gol
+            goalScored = true; // Marcar que o gol foi detectado
+            setTimeout(resetBallAfterGoal, 1000); // Reiniciar a bola após 1 segundo
+        }
+
+        // Controlar o jogador com o mouse
+        playerY = constrain(mouseY - paddleHeight / 2, 0, height - paddleHeight);
+
+        // Lógica para restaurar a escala da bola
+        if (squashTimer > 0) {
+            squashTimer--;
+        } else {
+            ballScale = lerp(ballScale, 1, 0.1); // Gradualmente volta à escala normal (1x)
+        }
+
+        // Exibir o placar
+        textAlign(CENTER);
+        textSize(32);
+        fill(255); // Cor do texto (branco)
+        text(playerScore, width / 4, 50); // Placar do jogador
+        text(computerScore, 3 * width / 4, 50); // Placar do computador
+
+        function resetBallAfterGoal() {
+            resetBall();
+            goalScored = false; // Reiniciar a flag para permitir a contagem de gols novamente
+        }
+
+        // Verificar se alguém ganhou
+        if (playerScore >= winningScore || computerScore >= winningScore) {
+            textSize(64);
+            text(playerScore >= winningScore ? "Player Wins!" : "Computer Wins!", width / 2, height / 2);
+            noLoop(); // Parar o jogo
+            return;
+        }
+
     }
 }
 
@@ -325,7 +338,7 @@ function drawInitialScreen() {
         fill(255); // Cor normal do botão
     }
 
-  // Verifica se o botão está selecionado (com teclado ou mouse)
+    // Verifica se o botão está selecionado (com teclado ou mouse)
     if (selectedOption === 0) {
         fill("#FFD700");  // Cor de destaque
     } else {
@@ -338,11 +351,12 @@ function drawInitialScreen() {
     textSize(32);
     text("Iniciar", width / 2, startButtonY + startButtonHeight / 1.4);
 
-     // Desenha instruções
-     fill(255);
-     textSize(20);
-     text("Precione ENTER ou CLICK para iniciar", width / 2, height - 50);  // Exibe uma dica de controle na tela
- 
+    // Desenha instruções
+    fill(255);
+    textSize(20);
+    text("Precione ENTER ou CLICK para iniciar", width / 2, height - 50);  // Exibe uma dica de controle na tela
+
+
 }
 
 function drawDifficultySelectionScreen() {
@@ -350,10 +364,12 @@ function drawDifficultySelectionScreen() {
 
     // Desenhar a imagem de fundo da tela inicial
     image(backgroundImage, 0, 0, width, height);
-    
+
     textAlign(CENTER);
     textSize(32);
     fill(255);
+
+    text("Selecione modo do jogo", width / 2, height - 300);
 
     let mouseOverOption = -1; // Variável para rastrear se o mouse está sobre algum botão
 
@@ -372,7 +388,7 @@ function drawDifficultySelectionScreen() {
         }
 
         // Desenhar o botão
-        rect(buttonX, buttonY[i], buttonWidth, buttonHeight, 30);
+        rect(buttonX, buttonY[i], buttonWidth, buttonHeight, 40);
 
         // Desenhar o texto do botão
         fill(0);
@@ -396,46 +412,109 @@ function applyDifficultySelection() {
     //console.log("Dificuldade selecionada:", difficulty);
 }
 
-// Função para verificar clique na tela inicial
-function mousePressed() {
-    if (initialScreen) {
-        // Verifica se o botão "Start" foi clicado
-        if (mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
-            mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
-            initialScreen = false; // Sair da tela inicial
-        }
-    } else if (!gameStarted) {
-        for (let i = 0; i < difficultyOptions.length; i++) {
-            if (mouseX >= buttonX && mouseX <= buttonX + buttonWidth &&
-                mouseY >= buttonY[i] && mouseY <= buttonY[i] + buttonHeight) {
-                selectedOption = i;
-                applyDifficultySelection();
 
-                gameStarted = true; // Iniciar o jogo
-            }
+function drawNameEntryScreen() {
+    background(0);
+    image(backgroundImage, 0, 0, width, height);
+
+    textAlign(CENTER);
+    textSize(32);
+    fill(255);
+    text("Digite seu nome:", width / 2, height / 2 - 100);
+
+    // Exibir o campo de entrada do nome
+    fill(0);
+    rect(width / 2 - 100, height / 2 - 50, 200, 50, 10);
+    fill(255);
+    text(playerName, width / 2, height / 2 - 15);
+
+    // Botão para iniciar o jogo
+    if (mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
+        mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
+        fill("#FFD700");
+    } else {
+        fill(255);
+    }
+    rect(startButtonX, startButtonY, startButtonWidth, startButtonHeight, 30);
+    fill(0);
+    text("Iniciar Jogo", width / 2, startButtonY + startButtonHeight / 1.4);
+
+    // Desenhar instruções
+    textSize(20);
+    fill(255);
+    text("Pressione ENTER ou clique em Iniciar Jogo", width / 2, height - 50);
+}
+
+
+function keyTyped() {
+    if (nameEntryScreen) {
+        if (key === 'Backspace') {
+            playerName = playerName.slice(0, -1); // Remove o último caractere
+        } else if (key.length === 1 && playerName.length < 10) { // Limita o nome a 10 caracteres
+            playerName += key; // Adiciona o caractere à entrada do nome
         }
     }
 }
 
+// Função para lidar com eventos de teclas
 function keyPressed() {
-    // Verifica se estamos na tela inicial
     if (initialScreen) {
+        // Verifica se a tecla Enter foi pressionada na tela inicial
         if (keyCode === ENTER) {
-            // Quando a tecla Enter for pressionada, inicie a seleção de dificuldade
             initialScreen = false;
+            difficultySelectionScreen = true; // Vai para a tela de seleção de dificuldade
+            return;
         }
-    } 
-    // Verifica se estamos na tela de seleção de dificuldade
-    else if (!gameStarted) {
-        if (keyCode === UP_ARROW) {
-            selectedOption = (selectedOption - 1 + difficultyOptions.length) % difficultyOptions.length;
-        } else if (keyCode === DOWN_ARROW) {
-            selectedOption = (selectedOption + 1) % difficultyOptions.length;
+    } else if (difficultySelectionScreen) {
+        // Lógica para selecionar a dificuldade com teclas
+        if (keyCode === UP_ARROW || keyCode === 87) { // Verifica se a tecla para cima ou 'W' foi pressionada
+            selectedOption = (selectedOption - 1 + difficultyOptions.length) % difficultyOptions.length; // Navega para cima
+        } else if (keyCode === DOWN_ARROW || keyCode === 83) { // Verifica se a tecla para baixo ou 'S' foi pressionada
+            selectedOption = (selectedOption + 1) % difficultyOptions.length; // Navega para baixo
+        } else if (keyCode === TAB) { // Tecla TAB para navegação
+            selectedOption = (selectedOption + 1) % difficultyOptions.length; // Cicla para a próxima opção
+        } else if (keyCode === ENTER) { // Verifica se a tecla Enter foi pressionada
+            applyDifficultySelection(); // Aplica a seleção de dificuldade
+            difficultySelectionScreen = false; // Sai da tela de seleção de dificuldade
+            nameEntryScreen = true; // Vai para a tela de entrada de nome
+        }
+    } else if (nameEntryScreen) {
+        // Aqui você pode adicionar a lógica para lidar com a tela de entrada de nome
+        if (keyCode >= 65 && keyCode <= 90 || keyCode >= 48 && keyCode <= 57) {
+            // Limita o número de caracteres a 10
+            if (playerName.length < 10) {
+                playerName += key; // Adiciona a letra ou número ao nome
+            }
+        } else if (keyCode === BACKSPACE) {
+            // Remove o último caractere se a tecla Backspace for pressionada
+            playerName = playerName.slice(0, -1);
         } else if (keyCode === ENTER) {
-            applyDifficultySelection();
-            gameStarted = true;  // Começa o jogo com a dificuldade selecionada
+            // Finaliza a entrada do nome e inicia o jogo
+            gameStarted = true;
+            nameEntryScreen = false;
         }
     }
 }
 
+    // Função para detectar cliques do mouse
+    function mousePressed() {
+        if (initialScreen && mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
+            mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
+            initialScreen = false;
+            difficultySelectionScreen = true; // Ir para a tela de seleção de dificuldade
+        } else if (difficultySelectionScreen && mouseX >= buttonX && mouseX <= buttonX + buttonWidth) {
+            for (let i = 0; i < difficultyOptions.length; i++) {
+                if (mouseY >= buttonY[i] && mouseY <= buttonY[i] + buttonHeight) {
+                    selectedOption = i;
+                    applyDifficultySelection(); // Aplicar a dificuldade selecionada
+                    difficultySelectionScreen = false;
+                    nameEntryScreen = true; // Ir para a tela de entrada de nome
+                }
+            }
+        } else if (nameEntryScreen && mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
+            mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
+            nameEntryScreen = false;
+            gameStarted = true; // Iniciar o jogo
+        }
+    }
 

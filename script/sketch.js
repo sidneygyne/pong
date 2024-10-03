@@ -13,7 +13,7 @@ let playerScore = 0;
 let computerScore = 0;
 let goalScored = false; // Flag para garantir que o placar seja atualizado uma vez por gol
 const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
-const winningScore = 5; // Definir o número de pontos necessários para vencer
+const winningScore = 1; // Definir o número de pontos necessários para vencer
 let selectedOption = 0; // Variável para rastrear a seleção atual (índice)
 let gameStarted = false;
 let difficulty = 'easy';
@@ -286,10 +286,12 @@ function draw() {
 
         // Exibir o placar
         textAlign(CENTER);
-        textSize(32);
+        textSize(22);
         fill(255); // Cor do texto (branco)
-        text(playerScore, width / 4, 50); // Placar do jogador
-        text(computerScore, 3 * width / 4, 50); // Placar do computador
+        text(playerName, width / 4, 50); // Nome do Jogador
+        text(playerScore, width / 4, 90); // Placar do jogador
+        text("Player 2", 3 * width / 4, 50); // Nome do Jogador
+        text(computerScore, 3 * width / 4, 90); // Placar do computador
 
         function resetBallAfterGoal() {
             resetBall();
@@ -298,8 +300,9 @@ function draw() {
 
         // Verificar se alguém ganhou
         if (playerScore >= winningScore || computerScore >= winningScore) {
-            textSize(64);
-            text(playerScore >= winningScore ? "Player Wins!" : "Computer Wins!", width / 2, height / 2);
+            textSize(50);
+            text("Ganhador", width / 2, height / 2);
+            text(playerScore >= winningScore ? playerName : "Player 2!", width / 2, height / 2 + 60 );
             noLoop(); // Parar o jogo
             return;
         }

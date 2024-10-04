@@ -126,15 +126,8 @@ function draw() {
         ballX += ballSpeedX;
         ballY += ballSpeedY;
 
-        // Verificar colisão com as barras superior e inferior
-        if (ballY - ballSize / 2 <= borderThickness || ballY + ballSize / 2 >= height - borderThickness) {
-            ballSpeedY *= -1;
-
-            // Evitar que a bola fique em linha reta vertical
-            if (abs(ballSpeedY) < 15) { // Se a velocidade vertical for muito baixa
-                ballSpeedY = random(2, 4, 6) * (ballSpeedY < 0 ? -1 : 1); // Força uma mudança de direção
-            }
-        }
+        // Verificar colisão com as bordas
+        handleWallCollision();
 
         // Função para aumentar a velocidade da bola
         function increaseSpeed() {
@@ -204,6 +197,34 @@ function draw() {
             moveComputerPaddleHard();
         }
 
+        function handleWallCollision() {
+            // Colisão com a borda superior
+            if (ballY - ballSize / 2 <= borderThickness) {
+                ballY = borderThickness + ballSize / 2; // Reposicionar a bola
+                ballSpeedY *= -1; // Inverter a direção Y da bola
+                adjustBallAngle(); // Ajustar o ângulo para evitar trajetórias retas
+            }
+
+            // Colisão com a borda inferior
+            if (ballY + ballSize / 2 >= height - borderThickness) {
+                ballY = height - borderThickness - ballSize / 2; // Reposicionar a bola
+                ballSpeedY *= -1; // Inverter a direção Y da bola
+                adjustBallAngle(); // Ajustar o ângulo para evitar trajetórias retas
+            }
+        }
+
+        function adjustBallAngle() {
+            // Evitar que a bola siga em linha reta vertical ou horizontal
+            if (abs(ballSpeedY) < 1.5) {  // Valor ajustado para aumentar o ângulo
+                ballSpeedY = random(3, 5) * (ballSpeedY < 0 ? -1 : 1); // Ajustar para garantir um ângulo mínimo
+            }
+
+            // Evitar que a bola siga em linha reta horizontal
+            if (abs(ballSpeedX) < 2.5) {  // Valor ajustado para aumentar o ângulo
+                ballSpeedX = random(4, 6) * (ballSpeedX < 0 ? -1 : 1); // Ajustar para garantir um ângulo mínimo
+            }
+        }
+
         // Direção da bola com base no toque das raquetes
         function handlePaddleCollision(paddleY, isComputer = false) {
             ballSpeedX *= -1;
@@ -225,32 +246,34 @@ function draw() {
             }
 
             let normalizedImpact = impactPoint / (paddleHeight / 2);
-            ballSpeedY = normalizedImpact * 3;
+            ballSpeedY = normalizedImpact * 4; // Aumente esse valor para intensificar o ângulo
 
-            // Evitar movimento horizontal em linha reta (quase zero)
-            if (abs(ballSpeedY) < 1) {
+            // Recalcular ângulos para evitar linha reta
+            adjustBallAngle();
+
+            // Evitar movimento horizontal ou vertical em linha reta (quase zero)
+            if (abs(ballSpeedY) < 1 || abs(ballSpeedX) < 1) {
                 ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
+                ballSpeedX = random(3, 5) * (ballSpeedX < 0 ? -1 : 1); // Evitar que o valor de X seja muito pequeno
             }
 
             // Evitar que a bola "cole" na borda superior ou inferior
-            if (ballY - ballSize / 2 <= borderThickness || ballY + ballSize / 2 >= height - borderThickness) {
-                ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Forçar mudança de direção vertical se necessário
+            if (ballY - ballSize / 2 <= borderThickness) {
+                ballY = borderThickness + ballSize / 2;
+                ballSpeedY = abs(ballSpeedY); // Força a bola a descer
+            } else if (ballY + ballSize / 2 >= height - borderThickness) {
+                ballY = height - borderThickness - ballSize / 2;
+                ballSpeedY = -abs(ballSpeedY); // Força a bola a subir
             }
 
             increaseSpeed(); // Aumentar a velocidade da bola
         }
 
-        // Verificar colisão com o jogador
+
+        // Verificar colisão com as raquetes
         if (ballX - ballSize / 2 <= 30 && ballY >= playerY && ballY <= playerY + paddleHeight) {
             handlePaddleCollision(playerY);
-        } else if (ballX - ballSize / 2 <= 30 && ballX + ballSpeedX - ballSize / 2 > 30) {
-            handlePaddleCollision(playerY);
-        }
-
-        // Verificar colisão com o computador
-        if (ballX + ballSize / 2 >= width - 30 && ballY >= computerY && ballY <= computerY + paddleHeight) {
-            handlePaddleCollision(computerY, true);
-        } else if (ballX + ballSize / 2 >= width - 30 && ballX + ballSpeedX + ballSize / 2 < width - 30) {
+        } else if (ballX + ballSize / 2 >= width - 30 && ballY >= computerY && ballY <= computerY + paddleHeight) {
             handlePaddleCollision(computerY, true);
         }
 

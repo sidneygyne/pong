@@ -13,22 +13,19 @@ let playerScore = 0;
 let computerScore = 0;
 let goalScored = false; // Flag para garantir que o placar seja atualizado uma vez por gol
 const maxBallSpeed = 15; // Limite de aumento da velocidade em 15 vezes
-const winningScore = 1; // Definir o número de pontos necessários para vencer
+const winningScore = 3; // Definir o número de pontos necessários para vencer
 let selectedOption = 0; // Variável para rastrear a seleção atual (índice)
 let gameStarted = false;
 let difficulty = 'easy';
 const difficultyOptions = ["Fácil", "Médio", "Difícil"];
-
 let initialScreen = true; // Variável para controlar se a tela inicial está sendo exibida
 let startButtonX, startButtonY, startButtonWidth, startButtonHeight;
-
-//Desenha os botoes de dificuldade
-let buttonX, buttonY = [], buttonWidth, buttonHeight;
-
-let playerName = 'Player'; // Nome padrão
+let buttonX, buttonY = [], buttonWidth, buttonHeight; // //Desenha os botoes de dificuldade
+let playerName = 'Player 1'; // Nome padrão
 let nameEntryScreen = false; // Novo estado para a tela de nome
 let nameInputActive = false; // Controla se a tela de nome está ativa
 let difficultySelectionScreen = false; // Estado para a tela de seleção de dificuldade
+let showRestartButton = false; // Controla quando exibir o botão de reinício
 
 function setup() {
     createCanvas(600, 400);
@@ -38,10 +35,6 @@ function setup() {
     startButtonHeight = 50;
     startButtonX = width / 2 - startButtonWidth / 2;
     startButtonY = height / 2 + 50;
-
-    // Carregar a imagem de fundo da tela inicial
-    // backgroundImage = loadImage('sprites/fundo_inicio.jfif');
-
     buttonWidth = 200;
     buttonHeight = 50;
     buttonX = width / 2 - buttonWidth / 2;
@@ -71,7 +64,6 @@ function setup() {
 
 function draw() {
 
-
     if (initialScreen) {
         drawInitialScreen(); // Mostrar a tela inicial
         return;
@@ -81,7 +73,6 @@ function draw() {
         drawNameEntryScreen(); // Mostrar a tela de entrada de nome
         return;
     }
-
 
     if (difficultySelectionScreen) {
         drawDifficultySelectionScreen(); // Mostrar a tela de seleção de dificuldade
@@ -151,7 +142,6 @@ function draw() {
             if (abs(ballSpeedX) < maxBallSpeed) {
                 ballSpeedX *= 1.1; // Aumenta a velocidade horizontal, limitado pelo valor máximo
             }
-
             if (abs(ballSpeedY) < maxBallSpeed) {
                 ballSpeedY *= 1.1; // Aumenta a velocidade vertical, limitado pelo valor máximo
             }
@@ -173,6 +163,7 @@ function draw() {
 
             computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
         }
+
         function moveComputerPaddleMedium() {
             let targetY = ballY - paddleHeight / 2;
             let computerSpeed = 4; // Velocidade média
@@ -188,6 +179,7 @@ function draw() {
 
             computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
         }
+
         function moveComputerPaddleEasy() {
             let targetY = ballY - paddleHeight / 2;
             let computerSpeed = 2; // Velocidade baixa para o nível fácil
@@ -200,10 +192,8 @@ function draw() {
                     computerY -= computerSpeed;
                 }
             }
-
             computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
         }
-
 
         // Chamar a função para mover a raquete do computador conforme nivel de fificuldade escolhido
         if (difficulty === 'easy') {
@@ -213,7 +203,6 @@ function draw() {
         } else if (difficulty === 'hard') {
             moveComputerPaddleHard();
         }
-
 
         // Direção da bola com base no toque das raquetes
         function handlePaddleCollision(paddleY, isComputer = false) {
@@ -226,7 +215,7 @@ function draw() {
             // Tocar o som de colisão
             bounceSound.play(); // Toca o som de colisão com a raquete
 
-            // Resto do código de colisão...
+            // Calcula o ponto de impacto e ajusta a velocidade da bola
             let impactPoint;
             if (isComputer) {
                 let offset = random(-paddleHeight / 4, paddleHeight / 4);
@@ -240,7 +229,12 @@ function draw() {
 
             // Evitar movimento horizontal em linha reta (quase zero)
             if (abs(ballSpeedY) < 1) {
-                ballSpeedY = random(1, 3) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
+                ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
+            }
+
+            // Evitar que a bola "cole" na borda superior ou inferior
+            if (ballY - ballSize / 2 <= borderThickness || ballY + ballSize / 2 >= height - borderThickness) {
+                ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Forçar mudança de direção vertical se necessário
             }
 
             increaseSpeed(); // Aumentar a velocidade da bola
@@ -259,7 +253,6 @@ function draw() {
         } else if (ballX + ballSize / 2 >= width - 30 && ballX + ballSpeedX + ballSize / 2 < width - 30) {
             handlePaddleCollision(computerY, true);
         }
-
 
         // Verificar gol (bola fora dos limites)
         if (!goalScored && ballX - ballSize / 2 <= 0) {
@@ -302,12 +295,48 @@ function draw() {
         if (playerScore >= winningScore || computerScore >= winningScore) {
             textSize(50);
             text("Ganhador", width / 2, height / 2);
-            text(playerScore >= winningScore ? playerName : "Player 2!", width / 2, height / 2 + 60 );
+            text(playerScore >= winningScore ? playerName : "Player 2!", width / 2, height / 2 + 60);
+
+            showRestartButton = true; // Exibir o botão de reinício
             noLoop(); // Parar o jogo
+            // Se o botão de reinício for visível, desenhá-lo
+            if (showRestartButton) {
+                drawRestartButton();
+            }
             return;
         }
-
     }
+}
+
+// Botao iniciar nova partida
+function drawRestartButton() {
+    // Definir a posição e o tamanho do botão
+    let btnX = width / 2 - 100;
+    let btnY = height / 2 + 100;
+    let btnWidth = 200;
+    let btnHeight = 50;
+
+    // Desenhar o botão
+    fill("#FFD700");
+    rect(btnX, btnY, btnWidth, btnHeight, 30);
+
+    fill(0);
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    text("Reiniciar", btnX + btnWidth / 2, btnY + btnHeight / 1.8);
+}
+
+// Reinicia partida
+function restartGame() {
+    // Resetar as variáveis do jogo para iniciar novamente
+    playerScore = 0;
+    computerScore = 0;
+    ballX = width / 2;
+    ballY = height / 2;
+    ballSpeedX = 5;
+    ballSpeedY = 5;
+    showRestartButton = false; // Esconder o botão de reinício
+    loop(); // Reiniciar o loop do jogo
 }
 
 // Reseta posição da bola
@@ -358,8 +387,6 @@ function drawInitialScreen() {
     fill(255);
     textSize(20);
     text("Precione ENTER ou CLICK para iniciar", width / 2, height - 50);  // Exibe uma dica de controle na tela
-
-
 }
 
 function drawDifficultySelectionScreen() {
@@ -448,17 +475,6 @@ function drawNameEntryScreen() {
     text("Pressione ENTER ou clique em Iniciar Jogo", width / 2, height - 50);
 }
 
-
-function keyTyped() {
-    if (nameEntryScreen) {
-        if (key === 'Backspace') {
-            playerName = playerName.slice(0, -1); // Remove o último caractere
-        } else if (key.length === 1 && playerName.length < 10) { // Limita o nome a 10 caracteres
-            playerName += key; // Adiciona o caractere à entrada do nome
-        }
-    }
-}
-
 // Função para lidar com eventos de teclas
 function keyPressed() {
     if (initialScreen) {
@@ -484,9 +500,11 @@ function keyPressed() {
     } else if (nameEntryScreen) {
         // Aqui você pode adicionar a lógica para lidar com a tela de entrada de nome
         if (keyCode >= 65 && keyCode <= 90 || keyCode >= 48 && keyCode <= 57) {
-            // Limita o número de caracteres a 10
             if (playerName.length < 10) {
-                playerName += key; // Adiciona a letra ou número ao nome
+                // Verifica se a tecla pressionada é uma letra ou número
+                if ((keyCode >= 65 && keyCode <= 90) || (keyCode >= 48 && keyCode <= 57)) {
+                    playerName += key; // Adiciona a letra ou número ao nome
+                }
             }
         } else if (keyCode === BACKSPACE) {
             // Remove o último caractere se a tecla Backspace for pressionada
@@ -496,28 +514,42 @@ function keyPressed() {
             gameStarted = true;
             nameEntryScreen = false;
         }
+    } else if (showRestartButton) {
+        if (keyCode === ENTER) {
+            restartGame(); // Reiniciar o jogo se o botão for clicado
+        }
     }
 }
 
-    // Função para detectar cliques do mouse
-    function mousePressed() {
-        if (initialScreen && mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
-            mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
-            initialScreen = false;
-            difficultySelectionScreen = true; // Ir para a tela de seleção de dificuldade
-        } else if (difficultySelectionScreen && mouseX >= buttonX && mouseX <= buttonX + buttonWidth) {
-            for (let i = 0; i < difficultyOptions.length; i++) {
-                if (mouseY >= buttonY[i] && mouseY <= buttonY[i] + buttonHeight) {
-                    selectedOption = i;
-                    applyDifficultySelection(); // Aplicar a dificuldade selecionada
-                    difficultySelectionScreen = false;
-                    nameEntryScreen = true; // Ir para a tela de entrada de nome
-                }
+// Função para detectar cliques do mouse
+function mousePressed() {
+    if (initialScreen && mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
+        mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
+        initialScreen = false;
+        difficultySelectionScreen = true; // Ir para a tela de seleção de dificuldade
+    } else if (difficultySelectionScreen && mouseX >= buttonX && mouseX <= buttonX + buttonWidth) {
+        for (let i = 0; i < difficultyOptions.length; i++) {
+            if (mouseY >= buttonY[i] && mouseY <= buttonY[i] + buttonHeight) {
+                selectedOption = i;
+                applyDifficultySelection(); // Aplicar a dificuldade selecionada
+                difficultySelectionScreen = false;
+                nameEntryScreen = true; // Ir para a tela de entrada de nome
             }
-        } else if (nameEntryScreen && mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
-            mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
-            nameEntryScreen = false;
-            gameStarted = true; // Iniciar o jogo
+        }
+    } else if (nameEntryScreen && mouseX >= startButtonX && mouseX <= startButtonX + startButtonWidth &&
+        mouseY >= startButtonY && mouseY <= startButtonY + startButtonHeight) {
+        nameEntryScreen = false;
+        gameStarted = true; // Iniciar o jogo
+    } else if (showRestartButton) {
+        let btnX = width / 2 - 100;
+        let btnY = height / 2 + 100;
+        let btnWidth = 200;
+        let btnHeight = 50;
+
+        if (mouseX > btnX && mouseX < btnX + btnWidth &&
+            mouseY > btnY && mouseY < btnY + btnHeight) {
+            restartGame(); // Reiniciar o jogo se o botão for clicado
         }
     }
+}
 

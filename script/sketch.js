@@ -88,31 +88,18 @@ function draw() {
         noStroke();
 
         // Definir a cor das barras superior e inferior
-        fill(color("#318cd5")); // Cor vermelha para as barras
+        fill(color("#318cd5"));
 
-        // Desenhar a barra superior
+        // Desenhar a barra superior e inferior
         rect(0, 0, width, borderThickness);
-
-        // Desenhar a barra inferior
         rect(0, height - borderThickness, width, borderThickness);
-
-        // Definir a cor das raquetes e da bola (opcional, se quiser diferenciar)
-        fill(255); // Cor branca para raquetes e bola
 
         // Restringir a raquete do jogador dentro dos limites das barras
         playerY = constrain(mouseY - paddleHeight / 2, borderThickness, height - paddleHeight - borderThickness);
 
-        // Desenhar a raquete do jogador
+        // Desenhar a raquete do jogador e do computador
         image(playerPaddleImage, 20, playerY, paddleWidth, paddleHeight);
-
-        // Desenhar a raquete do computador
         image(computerPaddleImage, width - 30, computerY, paddleWidth, paddleHeight);
-
-        // Calcular a velocidade total da bola (usando a magnitude da velocidade)
-        let ballSpeed = sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
-
-        // Atualizar o ângulo da bola com base na velocidade
-        ballAngle += ballSpeed * 0.05; // Ajustar o fator de rotação conforme necessário
 
         // Desenhar a bola com rotação
         push(); // Salvar o estado atual de transformação
@@ -125,6 +112,12 @@ function draw() {
         // Movimentar a bola
         ballX += ballSpeedX;
         ballY += ballSpeedY;
+
+        // Calcular a velocidade total da bola (usando a magnitude da velocidade)
+        let ballSpeed = sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
+
+        // Atualizar o ângulo da bola com base na velocidade
+        ballAngle += ballSpeed * 0.05; // Ajustar o fator de rotação conforme necessário
 
         // Verificar colisão com as bordas
         handleWallCollision();
@@ -153,10 +146,8 @@ function draw() {
                     computerY -= computerSpeed;
                 }
             }
-
             computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
         }
-
         function moveComputerPaddleMedium() {
             let targetY = ballY - paddleHeight / 2;
             let computerSpeed = 4; // Velocidade média
@@ -169,10 +160,8 @@ function draw() {
                     computerY -= computerSpeed;
                 }
             }
-
             computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
         }
-
         function moveComputerPaddleEasy() {
             let targetY = ballY - paddleHeight / 2;
             let computerSpeed = 2; // Velocidade baixa para o nível fácil
@@ -187,7 +176,6 @@ function draw() {
             }
             computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
         }
-
         // Chamar a função para mover a raquete do computador conforme nivel de fificuldade escolhido
         if (difficulty === 'easy') {
             moveComputerPaddleEasy();
@@ -197,6 +185,7 @@ function draw() {
             moveComputerPaddleHard();
         }
 
+        //Colisão da bola com bordas 
         function handleWallCollision() {
             // Colisão com a borda superior
             if (ballY - ballSize / 2 <= borderThickness) {
@@ -213,6 +202,7 @@ function draw() {
             }
         }
 
+        //Ajusta angulo da bola
         function adjustBallAngle() {
             // Evitar que a bola siga em linha reta vertical ou horizontal
             if (abs(ballSpeedY) < 1.5) {  // Valor ajustado para aumentar o ângulo
@@ -224,6 +214,9 @@ function draw() {
                 ballSpeedX = random(4, 6) * (ballSpeedX < 0 ? -1 : 1); // Ajustar para garantir um ângulo mínimo
             }
         }
+
+        // Recalcular ângulos para evitar linha reta
+        adjustBallAngle();
 
         // Direção da bola com base no toque das raquetes
         function handlePaddleCollision(paddleY, isComputer = false) {
@@ -248,9 +241,6 @@ function draw() {
             let normalizedImpact = impactPoint / (paddleHeight / 2);
             ballSpeedY = normalizedImpact * 4; // Aumente esse valor para intensificar o ângulo
 
-            // Recalcular ângulos para evitar linha reta
-            adjustBallAngle();
-
             // Evitar movimento horizontal ou vertical em linha reta (quase zero)
             if (abs(ballSpeedY) < 1 || abs(ballSpeedX) < 1) {
                 ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
@@ -269,7 +259,6 @@ function draw() {
             increaseSpeed(); // Aumentar a velocidade da bola
         }
 
-
         // Verificar colisão com as raquetes
         if (ballX - ballSize / 2 <= 30 && ballY >= playerY && ballY <= playerY + paddleHeight) {
             handlePaddleCollision(playerY);
@@ -280,12 +269,12 @@ function draw() {
         // Verificar gol (bola fora dos limites)
         if (!goalScored && ballX - ballSize / 2 <= 0) {
             computerScore++; // Computador marca um ponto
-            goalSound.play(); // Tocar o som de gol
+            //goalSound.play(); // Tocar o som de gol
             goalScored = true; // Marcar que o gol foi detectado
             setTimeout(resetBallAfterGoal, 1000); // Reiniciar a bola após 1 segundo
         } else if (!goalScored && ballX + ballSize / 2 >= width) {
             playerScore++; // Jogador marca um ponto
-            goalSound.play(); // Tocar o som de gol
+            //goalSound.play(); // Tocar o som de gol
             goalScored = true; // Marcar que o gol foi detectado
             setTimeout(resetBallAfterGoal, 1000); // Reiniciar a bola após 1 segundo
         }
@@ -316,6 +305,7 @@ function draw() {
 
         // Verificar se alguém ganhou
         if (playerScore >= winningScore || computerScore >= winningScore) {
+            goalSound.play(); // Tocar o som de gol
             textSize(50);
             text("Ganhador", width / 2, height / 2);
             text(playerScore >= winningScore ? playerName : "Player 2!", width / 2, height / 2 + 60);

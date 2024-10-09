@@ -280,6 +280,7 @@ function draw() {
                 impactPoint = (ballY - paddleY) - paddleHeight / 2;
             }
        
+            // Intensificar o ângulo
             let normalizedImpact = impactPoint / (paddleHeight / 2);
             ballSpeedY = ballSpeedY + (normalizedImpact * 4);// Aumente esse valor para intensificar o ângulo
 
@@ -292,7 +293,7 @@ function draw() {
             if (abs(ballSpeedX) < 2) {
                 ballSpeedX = random(3, 5) * (ballSpeedX < 0 ? -1 : 1); // Garante que a velocidade horizontal não fique muito baixa
             }
-            
+
             // Evitar movimento horizontal ou vertical em linha reta (quase zero)
             if (abs(ballSpeedY) < 1 || abs(ballSpeedX) < 1) {
                 ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto

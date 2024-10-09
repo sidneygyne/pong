@@ -8,19 +8,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Protest+Strike&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="/style/style.css">
     <link rel="stylesheet" href="/style/reset.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
 
-    <script src="script/sketch.js">
-
-    </script>
 </head>
 
 <body>
+
+  
+    <script src="p5.min.js"></script>
+    <script src="p5.sound.min.js"></script>
+
+    <script src="./script/sketch.js"></script>
+
+    
+        <script>
+            document.getElementById("startBtn").onclick = function () {
+                // Resumir o AudioContext para permitir sons
+                getAudioContext().resume();
+
+                // Iniciar o loop do jogo (caso tenha sido pausado)
+                loop();
+            }
+        </script>
+
 </body>
 
 </html>

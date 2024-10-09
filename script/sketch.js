@@ -98,6 +98,9 @@ function draw() {
 
     if (gameStarted) {
 
+        // Aqui, inicie o áudio ou qualquer lógica do jogo
+        getAudioContext().resume();
+
         // Desenhar a imagem de fundo
         image(backgroundImage, 0, 0, width, height);
 
@@ -150,7 +153,7 @@ function draw() {
 
         // Recalcular ângulos para evitar linha reta
         adjustBallAngle();
-        
+
         // Verificar colisão com as raquetes
         if (ballX - ballSize / 2 <= 30 && ballY >= playerY && ballY <= playerY + paddleHeight) {
             handlePaddleCollision(playerY);

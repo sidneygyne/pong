@@ -79,8 +79,8 @@ function setup() {
 
 function draw() {
 
-    textFont('Protest Strike')
-  
+    textFont('Protest Strike');
+
     if (initialScreen) {
         drawInitialScreen(); // Mostrar a tela inicial
         return;
@@ -139,74 +139,6 @@ function draw() {
         // Verificar colisão com as bordas
         handleWallCollision();
 
-        // Função para aumentar a velocidade da bola
-        function increaseSpeed() {
-            // Aumenta a velocidade horizontal, limitado pelo valor máximo
-            if (abs(ballSpeedX) < maxBallSpeed) {
-                ballSpeedX *= 1.1; // Aumenta em 10%
-                // Garante que não ultrapasse o máximo permitido
-                if (abs(ballSpeedX) > maxBallSpeed) {
-                    ballSpeedX = ballSpeedX > 0 ? maxBallSpeed : -maxBallSpeed;
-                }
-            }
-
-            // Aumenta a velocidade vertical, limitado pelo valor máximo
-            if (abs(ballSpeedY) < maxBallSpeed) {
-                ballSpeedY *= 1.1; // Aumenta em 10%
-                // Garante que não ultrapasse o máximo permitido
-                if (abs(ballSpeedY) > maxBallSpeed) {
-                    ballSpeedY = ballSpeedY > 0 ? maxBallSpeed : -maxBallSpeed;
-                }
-            }
-
-            console.log(ballSpeedX)
-        }
-
-        let randomOffset = random(-20, 20);// desvio na posição de destino os movimentos da raquete do computador
-
-        // Funções para mover a raquete do computador: Dificil, médio e fácil
-        function moveComputerPaddleHard() {
-            let targetY = ballY - paddleHeight / 2 + randomOffset;
-            let computerSpeed = 6; // Velocidade alta para o nível difícil
-            let errorMargin = 10; // Menor margem de erro para movimentos mais precisos
-
-            if (abs(computerY - targetY) > errorMargin) {
-                if (computerY < targetY) {
-                    computerY += computerSpeed;
-                } else if (computerY > targetY) {
-                    computerY -= computerSpeed;
-                }
-            }
-            computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
-        }
-        function moveComputerPaddleMedium() {
-            let targetY = ballY - paddleHeight / 2 + randomOffset;
-            let computerSpeed = 4; // Velocidade média
-            let errorMargin = 20; // Margem de erro média
-
-            if (abs(computerY - targetY) > errorMargin) {
-                if (computerY < targetY) {
-                    computerY += computerSpeed;
-                } else if (computerY > targetY) {
-                    computerY -= computerSpeed;
-                }
-            }
-            computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
-        }
-        function moveComputerPaddleEasy() {
-            let targetY = ballY - paddleHeight / 2 + randomOffset;
-            let computerSpeed = 2; // Velocidade baixa para o nível fácil
-            let errorMargin = 40; // Margem de erro maior
-
-            if (abs(computerY - targetY) > errorMargin) {
-                if (computerY < targetY) {
-                    computerY += computerSpeed;
-                } else if (computerY > targetY) {
-                    computerY -= computerSpeed;
-                }
-            }
-            computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
-        }
         // Chamar a função para mover a raquete do computador conforme nivel de fificuldade escolhido
         if (difficulty === 'easy') {
             moveComputerPaddleEasy();
@@ -216,105 +148,9 @@ function draw() {
             moveComputerPaddleHard();
         }
 
-        //Colisão da bola com bordas 
-        function handleWallCollision() {
-            // Colisão com a borda superior
-            if (ballY - ballSize / 2 <= borderThickness) {
-                ballY = borderThickness + ballSize / 2; // Reposicionar a bola
-                ballSpeedY *= -1; // Inverter a direção Y da bola
-                adjustBallAngle(); // Ajustar o ângulo para evitar trajetórias retas
-            }
-
-            // Colisão com a borda inferior
-            if (ballY + ballSize / 2 >= height - borderThickness) {
-                ballY = height - borderThickness - ballSize / 2; // Reposicionar a bola
-                ballSpeedY *= -1; // Inverter a direção Y da bola
-                adjustBallAngle(); // Ajustar o ângulo para evitar trajetórias retas
-            }
-        }
-
-        //Ajusta angulo da bola
-        function adjustBallAngle() {
-            // Evitar que a bola siga em linha reta vertical ou horizontal
-            if (abs(ballSpeedY) < 1.5) {  // Valor ajustado para aumentar o ângulo
-                ballSpeedY = random(3, 5) * (ballSpeedY < 0 ? -1 : 1); // Ajustar para garantir um ângulo mínimo
-            }
-
-            // Evitar que a bola siga em linha reta horizontal
-            if (abs(ballSpeedX) < 2.5) {  // Valor ajustado para aumentar o ângulo
-                ballSpeedX = random(4, 6) * (ballSpeedX < 0 ? -1 : 1); // Ajustar para garantir um ângulo mínimo
-            }
-        }
-
         // Recalcular ângulos para evitar linha reta
         adjustBallAngle();
-
-        // Direção da bola com base no toque das raquetes
-        function handlePaddleCollision(paddleY, isComputer = false) {
-            ballSpeedX *= -1;
-
-            // Reposicionar a bola fora da raquete
-            if (isComputer) {
-                ballX = width - 30 - ballSize / 2; // Reposicionar fora da raquete do computador
-            } else {
-                ballX = 30 + ballSize / 2; // Reposicionar fora da raquete do jogador
-            }
-
-            // Tocar o som de colisão apenas se o som não foi tocado nesta colisão
-            if (!collisionSoundPlayed) {
-                collisionSoundPlayed = true; // Impede que o som seja tocado novamente até que a bola se afaste
-            }
-            bounceSound.play(); // Toca o som de colisão com a raquete
-
-            if (ballX > width / 2) {
-                collisionSoundPlayed = false;
-            }
-
-            // Definir escala para o "esmagamento"
-            ballScale = 0.6; // Achata a bola
-            squashTimer = squashDuration; // Reiniciar o temporizador da animação
-
-            // Calcula o ponto de impacto e ajusta a velocidade da bola
-            let impactPoint;
-            if (isComputer) {
-                let offset = random(-paddleHeight / 4, paddleHeight / 4);
-                impactPoint = (ballY + offset - paddleY) - paddleHeight / 2;
-            } else {
-                impactPoint = (ballY - paddleY) - paddleHeight / 2;
-            }
-       
-            // Intensificar o ângulo
-            let normalizedImpact = impactPoint / (paddleHeight / 2);
-            ballSpeedY = ballSpeedY + (normalizedImpact * 4);// Aumente esse valor para intensificar o ângulo
-
-            // Evitar que a bola se mova muito lentamente na vertical (linha reta)
-            if (abs(ballSpeedY) < 1) {
-                ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Garante um ângulo mínimo
-            }
-
-            // Evitar que a bola se mova muito lentamente na horizontal
-            if (abs(ballSpeedX) < 2) {
-                ballSpeedX = random(3, 5) * (ballSpeedX < 0 ? -1 : 1); // Garante que a velocidade horizontal não fique muito baixa
-            }
-
-            // Evitar movimento horizontal ou vertical em linha reta (quase zero)
-            if (abs(ballSpeedY) < 1 || abs(ballSpeedX) < 1) {
-                ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
-                ballSpeedX = random(3, 5) * (ballSpeedX < 0 ? -1 : 1); // Evitar que o valor de X seja muito pequeno
-            }
-
-            // Evitar que a bola "cole" na borda superior ou inferior
-            if (ballY - ballSize / 2 <= borderThickness) {
-                ballY = borderThickness + ballSize / 2;
-                ballSpeedY = abs(ballSpeedY); // Força a bola a descer
-            } else if (ballY + ballSize / 2 >= height - borderThickness) {
-                ballY = height - borderThickness - ballSize / 2;
-                ballSpeedY = -abs(ballSpeedY); // Força a bola a subir
-            }
-
-            increaseSpeed(); // Aumentar a velocidade da bola
-        }
-
+        
         // Verificar colisão com as raquetes
         if (ballX - ballSize / 2 <= 30 && ballY >= playerY && ballY <= playerY + paddleHeight) {
             handlePaddleCollision(playerY);
@@ -358,12 +194,6 @@ function draw() {
         text("Player 2", 3 * width / 4, 50); // Nome do Jogador
         text(computerScore, 3 * width / 4, 90); // Placar do computador
 
-        function resetBallAfterGoal() {
-            resetBall();
-            goalScored = false; // Reiniciar a flag para permitir a contagem de gols novamente
-            collisionSoundPlayed = false; // Resetar o som de colisão após o gol
-        }
-
         // Verificar se alguém ganhou
         if (playerScore >= winningScore || computerScore >= winningScore) {
             goalSound.play(); // Tocar o som de gol
@@ -383,6 +213,171 @@ function draw() {
     }
 }
 
+//Aumentar a velocidade da bola
+function increaseSpeed() {
+    // Aumenta a velocidade horizontal, limitado pelo valor máximo
+    if (abs(ballSpeedX) < maxBallSpeed) {
+        ballSpeedX *= 1.1; // Aumenta em 10%
+        // Garante que não ultrapasse o máximo permitido
+        if (abs(ballSpeedX) > maxBallSpeed) {
+            ballSpeedX = ballSpeedX > 0 ? maxBallSpeed : -maxBallSpeed;
+        }
+    }
+    // Aumenta a velocidade vertical, limitado pelo valor máximo
+    if (abs(ballSpeedY) < maxBallSpeed) {
+        ballSpeedY *= 1.1; // Aumenta em 10%
+        // Garante que não ultrapasse o máximo permitido
+        if (abs(ballSpeedY) > maxBallSpeed) {
+            ballSpeedY = ballSpeedY > 0 ? maxBallSpeed : -maxBallSpeed;
+        }
+    }
+
+    console.log(ballSpeedX)
+}
+
+//Colisão da bola com bordas 
+function handleWallCollision() {
+    // Colisão com a borda superior
+    if (ballY - ballSize / 2 <= borderThickness) {
+        ballY = borderThickness + ballSize / 2; // Reposicionar a bola
+        ballSpeedY *= -1; // Inverter a direção Y da bola
+        adjustBallAngle(); // Ajustar o ângulo para evitar trajetórias retas
+    }
+
+    // Colisão com a borda inferior
+    if (ballY + ballSize / 2 >= height - borderThickness) {
+        ballY = height - borderThickness - ballSize / 2; // Reposicionar a bola
+        ballSpeedY *= -1; // Inverter a direção Y da bola
+        adjustBallAngle(); // Ajustar o ângulo para evitar trajetórias retas
+    }
+}
+
+//Ajusta angulo da bola
+function adjustBallAngle() {
+    // Evitar que a bola siga em linha reta vertical ou horizontal
+    if (abs(ballSpeedY) < 1.5) {  // Valor ajustado para aumentar o ângulo
+        ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Ajustar para garantir um ângulo mínimo
+    }
+
+    // Evitar que a bola siga em linha reta horizontal
+    if (abs(ballSpeedX) < 2.5) {  // Valor ajustado para aumentar o ângulo
+        ballSpeedX = random(4, 6) * (ballSpeedX < 0 ? -1 : 1); // Ajustar para garantir um ângulo mínimo
+    }
+}
+
+// Direção da bola com base no toque das raquetes
+function handlePaddleCollision(paddleY, isComputer = false) {
+    ballSpeedX *= -1;
+
+    // Reposicionar a bola fora da raquete
+    if (isComputer) {
+        ballX = width - 30 - ballSize / 2; // Reposicionar fora da raquete do computador
+    } else {
+        ballX = 30 + ballSize / 2; // Reposicionar fora da raquete do jogador
+    }
+
+    // Tocar o som de colisão apenas se o som não foi tocado nesta colisão
+    if (!collisionSoundPlayed) {
+        collisionSoundPlayed = true; // Impede que o som seja tocado novamente até que a bola se afaste
+    }
+    bounceSound.play(); // Toca o som de colisão com a raquete
+
+    if (ballX > width / 2) {
+        collisionSoundPlayed = false;
+    }
+
+    // Definir escala para o "esmagamento"
+    ballScale = 0.6; // Achata a bola
+    squashTimer = squashDuration; // Reiniciar o temporizador da animação
+
+    // Calcula o ponto de impacto e ajusta a velocidade da bola
+    let impactPoint;
+    if (isComputer) {
+        let offset = random(-paddleHeight / 4, paddleHeight / 4);
+        impactPoint = (ballY + offset - paddleY) - paddleHeight / 2;
+    } else {
+        impactPoint = (ballY - paddleY) - paddleHeight / 2;
+    }
+
+    // Intensificar o ângulo
+    let normalizedImpact = impactPoint / (paddleHeight / 2);
+    ballSpeedY = ballSpeedY + (normalizedImpact * 4);// Aumente esse valor para intensificar o ângulo
+
+    // Evitar que a bola se mova muito lentamente na vertical (linha reta)
+    if (abs(ballSpeedY) < 1) {
+        ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Garante um ângulo mínimo
+    }
+
+    // Evitar que a bola se mova muito lentamente na horizontal
+    if (abs(ballSpeedX) < 2) {
+        ballSpeedX = random(3, 5) * (ballSpeedX < 0 ? -1 : 1); // Garante que a velocidade horizontal não fique muito baixa
+    }
+
+    // Evitar movimento horizontal ou vertical em linha reta (quase zero)
+    if (abs(ballSpeedY) < 1 || abs(ballSpeedX) < 1) {
+        ballSpeedY = random(2, 4) * (ballSpeedY < 0 ? -1 : 1); // Força um ângulo se for muito reto
+        ballSpeedX = random(3, 5) * (ballSpeedX < 0 ? -1 : 1); // Evitar que o valor de X seja muito pequeno
+    }
+
+    // Evitar que a bola "cole" na borda superior ou inferior
+    if (ballY - ballSize / 2 <= borderThickness) {
+        ballY = borderThickness + ballSize / 2;
+        ballSpeedY = abs(ballSpeedY); // Força a bola a descer
+    } else if (ballY + ballSize / 2 >= height - borderThickness) {
+        ballY = height - borderThickness - ballSize / 2;
+        ballSpeedY = -abs(ballSpeedY); // Força a bola a subir
+    }
+
+    increaseSpeed(); // Aumentar a velocidade da bola
+}
+
+
+// Funções para mover a raquete do computador: Dificil, médio e fácil
+function moveComputerPaddleHard() {
+    let randomOffset = random(-20, 20);// desvio na posição de destino os movimentos da raquete do computador
+    let targetY = ballY - paddleHeight / 2 + randomOffset;
+    let computerSpeed = 6; // Velocidade alta para o nível difícil
+    let errorMargin = 10; // Menor margem de erro para movimentos mais precisos
+
+    if (abs(computerY - targetY) > errorMargin) {
+        if (computerY < targetY) {
+            computerY += computerSpeed;
+        } else if (computerY > targetY) {
+            computerY -= computerSpeed;
+        }
+    }
+    computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
+}
+function moveComputerPaddleMedium() {
+    let randomOffset = random(-20, 20);// desvio na posição de destino os movimentos da raquete do computador
+    let targetY = ballY - paddleHeight / 2 + randomOffset;
+    let computerSpeed = 4; // Velocidade média
+    let errorMargin = 20; // Margem de erro média
+
+    if (abs(computerY - targetY) > errorMargin) {
+        if (computerY < targetY) {
+            computerY += computerSpeed;
+        } else if (computerY > targetY) {
+            computerY -= computerSpeed;
+        }
+    }
+    computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
+}
+function moveComputerPaddleEasy() {
+    let randomOffset = random(-20, 20);// desvio na posição de destino os movimentos da raquete do computador
+    let targetY = ballY - paddleHeight / 2 + randomOffset;
+    let computerSpeed = 2; // Velocidade baixa para o nível fácil
+    let errorMargin = 40; // Margem de erro maior
+
+    if (abs(computerY - targetY) > errorMargin) {
+        if (computerY < targetY) {
+            computerY += computerSpeed;
+        } else if (computerY > targetY) {
+            computerY -= computerSpeed;
+        }
+    }
+    computerY = constrain(computerY, borderThickness, height - paddleHeight - borderThickness);
+}
 
 // Botao iniciar nova partida
 function drawRestartButton() {
@@ -415,6 +410,13 @@ function restartGame() {
     loop(); // Reiniciar o loop do jogo
 }
 
+// Reiniciar placar
+function resetBallAfterGoal() {
+    resetBall();
+    goalScored = false; // Reiniciar a flag para permitir a contagem de gols novamente
+    collisionSoundPlayed = false; // Resetar o som de colisão após o gol
+}
+
 // Reseta posição da bola
 function resetBall() {
     ballX = width / 2;
@@ -434,7 +436,7 @@ function drawInitialScreen() {
     // Definir o estilo do texto
     textAlign(CENTER);
     textSize(64);
-    
+
 
     // Mostrar o texto do título
     text("Pong Game", width / 2, height / 2 - 100);

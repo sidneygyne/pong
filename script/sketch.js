@@ -32,6 +32,7 @@ let collisionSoundPlayed = false; // Variável de controle para o som de colisã
 
 function setup() {
     createCanvas(600, 400);
+    //createCanvas(1360, 765);
 
     // Inicializar a tela inicial
     startButtonWidth = 200;
@@ -78,6 +79,8 @@ function setup() {
 
 function draw() {
 
+    textFont('Protest Strike')
+  
     if (initialScreen) {
         drawInitialScreen(); // Mostrar a tela inicial
         return;
@@ -431,7 +434,7 @@ function drawInitialScreen() {
     // Definir o estilo do texto
     textAlign(CENTER);
     textSize(64);
-    fill(255);
+    
 
     // Mostrar o texto do título
     text("Pong Game", width / 2, height / 2 - 100);
